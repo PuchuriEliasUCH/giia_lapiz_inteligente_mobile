@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>GraphiCare - Prototipo</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        secondary: "#9d4300", "surface-tint": "#0053db", "surface-container": "#e6eeff",
+        "on-secondary-fixed": "#341100", "surface-container-low": "#eff4ff",
+        "primary-fixed-dim": "#b4c5ff", "tertiary-container": "#196fc0",
+        "outline-variant": "#c3c6d7", "on-primary-container": "#eeefff",
+        "inverse-on-surface": "#eaf1ff", "on-tertiary-fixed": "#001c39",
+        "on-background": "#121c2a", "surface-container-high": "#dee9fc",
+        "on-tertiary": "#ffffff", "tertiary-fixed-dim": "#a4c9ff",
+        primary: "#004ac6", "on-secondary-container": "#5c2400",
+        "on-secondary": "#ffffff", "on-tertiary-fixed-variant": "#004883",
+        "tertiary-fixed": "#d4e3ff", "surface-bright": "#f8f9ff",
+        "on-secondary-fixed-variant": "#783200", "error-container": "#ffdad6",
+        outline: "#737686", "surface-variant": "#d9e3f6",
+        "on-primary": "#ffffff", "secondary-fixed-dim": "#ffb690",
+        "on-primary-fixed-variant": "#003ea8", error: "#ba1a1a",
+        "on-error-container": "#93000a", "on-surface-variant": "#434655",
+        tertiary: "#00569c", "on-error": "#ffffff",
+        "secondary-fixed": "#ffdbca", "primary-container": "#2563eb",
+        "on-surface": "#121c2a", "surface-container-highest": "#d9e3f6",
+        "secondary-container": "#fd761a", "inverse-primary": "#b4c5ff",
+        "primary-fixed": "#dbe1ff", "surface-dim": "#d0dbed",
+        "on-tertiary-container": "#ebf1ff", "surface-container-lowest": "#ffffff",
+        background: "#f8f9ff", surface: "#f8f9ff", "inverse-surface": "#27313f",
+        "on-primary-fixed": "#00174b"
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: {
+        md: "24px", xs: "4px", base: "8px", "margin-mobile": "20px", xl: "64px",
+        gutter: "16px", sm: "12px", "touch-target-min": "48px", lg: "40px"
+      },
+      fontFamily: {
+        "body-md": ["Atkinson Hyperlegible Next"], "label-lg": ["Atkinson Hyperlegible Next"],
+        "headline-md": ["Atkinson Hyperlegible Next"], "headline-lg": ["Atkinson Hyperlegible Next"],
+        button: ["Atkinson Hyperlegible Next"], "headline-lg-mobile": ["Atkinson Hyperlegible Next"],
+        "body-lg": ["Atkinson Hyperlegible Next"]
+      },
+      fontSize: {
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-lg": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "600" }],
+        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+        button: ["18px", { lineHeight: "24px", fontWeight: "600" }],
+        "headline-lg-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }]
+      }
+    }
+  }
+}
+</script>
+<style>
+  body {
+    font-family: 'Atkinson Hyperlegible Next', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    background-color: #f8f9ff;
+    min-height: max(884px, 100dvh);
+  }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+  }
+  .screen { display: none; }
+  .screen.active { display: flex; }
+  .input-focus-ring:focus-within {
+    border-color: #004ac6;
+    box-shadow: 0 0 0 2px rgba(0, 74, 198, 0.1);
+  }
+  .soft-elevation { box-shadow: 0 4px 20px -2px rgba(18, 28, 42, 0.08); }
+  .shadow-soft { box-shadow: 0 4px 20px -2px rgba(18, 28, 42, 0.08); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 8px); }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .tab-active { color: #004ac6; border-bottom: 3px solid #004ac6; }
+  .tab-inactive { color: #737686; }
+  .fab {
+    position: fixed; bottom: 96px; right: 20px;
+    width: 56px; height: 56px; border-radius: 16px;
+    background: #2563eb; color: white;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+    z-index: 40; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .fab:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5); }
+  .fab:active { transform: scale(0.95); }
+  .child-card { transition: all 0.15s; }
+  .child-card:active { transform: scale(0.97); }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 60; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- SCREEN: LOGIN                                                -->
+<!-- ============================================================ -->
+<section class="screen active flex-col justify-center items-center overflow-x-hidden p-margin-mobile w-full min-h-screen" id="screen-login">
+  <div class="fixed top-[-10%] right-[-10%] w-[400px] h-[400px] bg-surface-container rounded-full blur-[100px] -z-10 opacity-60"></div>
+  <div class="fixed bottom-[-5%] left-[-10%] w-[300px] h-[300px] bg-secondary-fixed rounded-full blur-[120px] -z-10 opacity-30"></div>
+  <main class="w-full max-w-[440px] flex flex-col items-center">
+    <div class="mb-lg flex flex-col items-center">
+      <div class="w-16 h-16 bg-primary-container rounded-xl flex items-center justify-center shadow-lg mb-md">
+        <span class="material-symbols-outlined text-on-primary-container !text-[36px]" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+      </div>
+      <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-xs tracking-tight">GraphiCare</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant text-center px-md">Potenciando la escritura con precisión y empatía.</p>
+    </div>
+    <section class="w-full bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-md space-y-md">
+      <div class="space-y-sm">
+        <label class="font-label-lg text-label-lg text-on-surface block px-xs" for="login-email">Correo Electrónico</label>
+        <div class="relative flex items-center h-touch-target-min border border-outline rounded-lg bg-surface-bright input-focus-ring transition-all">
+          <span class="material-symbols-outlined absolute left-4 text-on-surface-variant">mail</span>
+          <input class="w-full h-full pl-12 pr-4 bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface placeholder:text-outline-variant" id="login-email" placeholder="ej. nombre@ejemplo.com" required type="email"/>
+        </div>
+      </div>
+      <div class="space-y-sm">
+        <div class="flex justify-between items-center px-xs">
+          <label class="font-label-lg text-label-lg text-on-surface block" for="login-password">Contraseña</label>
+          <a class="text-label-lg text-primary hover:underline" href="#">¿Olvidaste?</a>
+        </div>
+        <div class="relative flex items-center h-touch-target-min border border-outline rounded-lg bg-surface-bright input-focus-ring transition-all">
+          <span class="material-symbols-outlined absolute left-4 text-on-surface-variant">lock</span>
+          <input class="w-full h-full pl-12 pr-12 bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface placeholder:text-outline-variant" id="login-password" placeholder="Tu contraseña" required type="password"/>
+          <button class="absolute right-4 text-on-surface-variant hover:text-primary transition-colors flex items-center" onclick="togglePassword('login-password','login-pw-icon')" type="button">
+            <span class="material-symbols-outlined" id="login-pw-icon">visibility</span>
+          </button>
+        </div>
+      </div>
+      <button class="w-full h-touch-target-min bg-primary-container text-on-primary-container font-button text-button rounded-full shadow-md hover:bg-primary transition-all active:scale-95 flex items-center justify-center gap-base" onclick="navigateTo('homepage')" type="button">
+        Iniciar Sesión
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </section>
+    <footer class="mt-lg text-center">
+      <p class="font-body-md text-body-md text-on-surface-variant">
+        ¿No tienes cuenta?
+        <a class="text-primary font-bold hover:underline cursor-pointer" onclick="navigateTo('register')">Crear una cuenta</a>
+      </p>
+    </footer>
+    <div class="w-full mt-xl p-md rounded-xl bg-surface-container-lowest/60 border border-outline-variant/40 flex items-start gap-md">
+      <div class="p-base bg-secondary-container text-on-secondary-container rounded-lg">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+      </div>
+      <div>
+        <p class="font-label-lg text-label-lg text-on-surface-variant uppercase tracking-wider mb-xs">Apoyo Educativo</p>
+        <p class="font-body-md text-body-md text-on-surface">Herramienta de monitoreo para apoyar a niños con dificultades de escritura.</p>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- ============================================================ -->
+<!-- SCREEN: REGISTER                                             -->
+<!-- ============================================================ -->
+<section class="screen flex-col items-center justify-center p-margin-mobile w-full min-h-screen" id="screen-register">
+  <main class="w-full max-w-[480px] flex flex-col gap-lg">
+    <header class="flex flex-col items-center text-center gap-base">
+      <div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center shadow-lg">
+        <span class="material-symbols-outlined text-white text-[36px]">edit_square</span>
+      </div>
+      <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mt-sm">Crear Cuenta</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant max-w-[320px]">Regístrate para monitorear el progreso de escritura de tus alumnos.</p>
+    </header>
+    <section class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/30">
+      <form class="flex flex-col gap-md" onsubmit="navigateTo('homepage'); return false;">
+        <div class="flex flex-col gap-xs">
+          <label class="font-label-lg text-label-lg text-on-surface-variant ml-1" for="reg-name">Nombre Completo</label>
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
+              <span class="material-symbols-outlined">person</span>
+            </div>
+            <input class="w-full h-touch-target-min pl-12 pr-4 bg-white border border-outline rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="reg-name" placeholder="Juan Pérez" required type="text"/>
+          </div>
+        </div>
+        <div class="flex flex-col gap-xs">
+          <label class="font-label-lg text-label-lg text-on-surface-variant ml-1" for="reg-email">Correo Electrónico</label>
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
+              <span class="material-symbols-outlined">mail</span>
+            </div>
+            <input class="w-full h-touch-target-min pl-12 pr-4 bg-white border border-outline rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="reg-email" placeholder="nombre@ejemplo.com" required type="email"/>
+          </div>
+        </div>
+        <div class="flex flex-col gap-xs">
+          <label class="font-label-lg text-label-lg text-on-surface-variant ml-1" for="reg-password">Contraseña</label>
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
+              <span class="material-symbols-outlined">lock</span>
+            </div>
+            <input class="w-full h-touch-target-min pl-12 pr-12 bg-white border border-outline rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="reg-password" placeholder="********" required type="password"/>
+            <button class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors" onclick="togglePassword('reg-password','reg-pw-icon')" type="button">
+              <span class="material-symbols-outlined" id="reg-pw-icon">visibility</span>
+            </button>
+          </div>
+        </div>
+        <div class="flex flex-col gap-xs">
+          <label class="font-label-lg text-label-lg text-on-surface-variant ml-1" for="reg-confirm">Confirmar Contraseña</label>
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
+              <span class="material-symbols-outlined">lock_reset</span>
+            </div>
+            <input class="w-full h-touch-target-min pl-12 pr-12 bg-white border border-outline rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="reg-confirm" placeholder="********" required type="password"/>
+          </div>
+        </div>
+        <div class="flex items-center gap-sm mt-xs">
+          <input class="w-5 h-5 text-primary border-outline rounded focus:ring-primary" id="reg-terms" required type="checkbox"/>
+          <label class="font-body-md text-body-md text-on-surface-variant select-none" for="reg-terms">
+            Acepto los <a class="text-primary font-semibold hover:underline" href="#">Términos y Política de Privacidad</a>
+          </label>
+        </div>
+        <button class="w-full h-touch-target-min bg-secondary-container text-white font-button text-button rounded-xl shadow-md hover:bg-secondary transition-all active:scale-[0.98] mt-md" type="submit">
+          Registrarse
+        </button>
+      </form>
+    </section>
+    <footer class="flex flex-col items-center gap-base">
+      <p class="font-body-md text-body-md text-on-surface-variant">
+        ¿Ya tienes cuenta?
+        <a class="text-primary font-bold hover:underline cursor-pointer" onclick="navigateTo('login')">Iniciar Sesión</a>
+      </p>
+      <div class="flex items-center gap-gutter mt-sm grayscale opacity-50">
+        <div class="h-px bg-outline-variant w-12"></div>
+        <span class="font-label-lg text-label-lg text-outline">Potenciando Cada Trazo</span>
+        <div class="h-px bg-outline-variant w-12"></div>
+      </div>
+    </footer>
+  </main>
+  <div class="fixed bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary-container to-tertiary"></div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SCREEN: HOMEPAGE (Inicio)                                    -->
+<!-- ============================================================ -->
+<section class="screen flex-col min-h-screen pb-24" id="screen-homepage">
+  <header class="bg-surface-container-low fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target-min shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full overflow-hidden bg-primary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary-container text-xl" style="font-variation-settings: 'FILL' 1;">person</span>
+      </div>
+      <div>
+        <span class="font-headline-md text-headline-md text-primary">GraphiCare</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary">battery_horiz_075</span>
+    </div>
+  </header>
+
+  <main class="mt-20 px-margin-mobile max-w-2xl mx-auto w-full space-y-md">
+    <section>
+      <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Hola, Juan</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-xs">Resumen general de tu progreso y alumnos.</p>
+    </section>
+
+    <!-- Metric cards row -->
+    <div class="grid grid-cols-2 gap-sm">
+      <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">school</span>
+          </div>
+          <div>
+            <p class="font-label-lg text-label-lg text-on-surface-variant">Alumnos</p>
+            <p class="font-headline-md text-headline-md text-on-surface">12</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 rounded-lg bg-tertiary-container/10 flex items-center justify-center text-tertiary">
+            <span class="material-symbols-outlined">assignment_turned_in</span>
+          </div>
+          <div>
+            <p class="font-label-lg text-label-lg text-on-surface-variant">Sesiones</p>
+            <p class="font-headline-md text-headline-md text-on-surface">48</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-sm">
+      <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 rounded-lg bg-secondary-container/10 flex items-center justify-center text-secondary-container">
+            <span class="material-symbols-outlined">trending_up</span>
+          </div>
+          <div>
+            <p class="font-label-lg text-label-lg text-on-surface-variant">Precisión Prom.</p>
+            <p class="font-headline-md text-headline-md text-on-surface">87%</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 rounded-lg bg-error-container/10 flex items-center justify-center text-error">
+            <span class="material-symbols-outlined">error_outline</span>
+          </div>
+          <div>
+            <p class="font-label-lg text-label-lg text-on-surface-variant">Alertas</p>
+            <p class="font-headline-md text-headline-md text-on-surface">3</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent activity -->
+    <div class="bg-surface-container-lowest p-gutter rounded-xl soft-elevation border border-surface-container-highest">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-headline-md text-headline-md text-primary">Actividad Reciente</h3>
+        <span class="material-symbols-outlined text-outline-variant">more_horiz</span>
+      </div>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
+          <div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-lg">child_care</span>
+          </div>
+          <div class="flex-1">
+            <p class="font-label-lg text-label-lg text-on-surface">Sofía - Trazo de Líneas</p>
+            <p class="text-[12px] text-on-surface-variant">Hace 2 horas · 92% precisión</p>
+          </div>
+          <span class="text-[12px] font-semibold text-primary">Completado</span>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
+          <div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-lg">child_care</span>
+          </div>
+          <div class="flex-1">
+            <p class="font-label-lg text-label-lg text-on-surface">Mateo - Curvas</p>
+            <p class="text-[12px] text-on-surface-variant">Hace 5 horas · 78% precisión</p>
+          </div>
+          <span class="text-[12px] font-semibold text-primary">Completado</span>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
+          <div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-lg">child_care</span>
+          </div>
+          <div class="flex-1">
+            <p class="font-label-lg text-label-lg text-on-surface">Lucía - Letras</p>
+            <p class="text-[12px] text-on-surface-variant">Ayer · 85% precisión</p>
+          </div>
+          <span class="text-[12px] font-semibold text-primary">Completado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly chart summary -->
+    <div class="bg-surface-container-lowest p-gutter rounded-xl soft-elevation border border-surface-container-highest">
+      <h3 class="font-headline-md text-headline-md text-primary mb-3">Sesiones esta semana</h3>
+      <div class="flex items-end justify-between h-32 px-2 gap-2">
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-primary-container rounded-t-lg h-[60%] transition-all"></div>
+          <span class="font-label-lg text-[11px] text-outline">Lun</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-surface-container rounded-t-lg h-[40%] transition-all"></div>
+          <span class="font-label-lg text-[11px] text-outline">Mar</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-primary-container rounded-t-lg h-[80%] transition-all"></div>
+          <span class="font-label-lg text-[11px] text-outline">Mié</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-surface-container rounded-t-lg h-[30%] transition-all"></div>
+          <span class="font-label-lg text-[11px] text-outline">Jue</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-primary-container rounded-t-lg h-[70%] transition-all"></div>
+          <span class="font-label-lg text-[11px] text-outline">Vie</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-surface-container rounded-t-lg h-[20%] transition-all"></div>
+          <span class="font-label-lg text-[11px] text-outline">Sáb</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Nav -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] rounded-t-xl">
+    <a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('homepage')">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+      <span class="font-label-lg text-label-lg">Inicio</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('alumnos')">
+      <span class="material-symbols-outlined">group</span>
+      <span class="font-label-lg text-label-lg">Alumnos</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('perfil')">
+      <span class="material-symbols-outlined">person</span>
+      <span class="font-label-lg text-label-lg">Perfil</span>
+    </a>
+  </nav>
+</section>
+
+<!-- ============================================================ -->
+<!-- SCREEN: ALUMNOS                                              -->
+<!-- ============================================================ -->
+<section class="screen flex-col min-h-screen pb-24" id="screen-alumnos">
+  <header class="bg-surface-container-low fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target-min shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="font-headline-md text-headline-md text-primary">Alumnos</span>
+    </div>
+    <span class="material-symbols-outlined text-primary">battery_horiz_075</span>
+  </header>
+
+  <main class="mt-16 px-margin-mobile max-w-2xl mx-auto w-full">
+    <section class="mb-md mt-4">
+      <div class="relative group">
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+        <input class="w-full h-touch-target-min pl-12 pr-4 bg-surface-container-lowest border border-outline rounded-xl font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" placeholder="Buscar alumnos..." type="text" id="search-alumnos"/>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-2 gap-sm" id="alumnos-grid">
+      <!-- Child 1 -->
+      <div class="child-card bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest cursor-pointer" onclick="navigateTo('alumno-detail')">
+        <div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary mx-auto mb-2">
+          <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">child_care</span>
+        </div>
+        <p class="font-headline-md text-[16px] text-center text-on-surface">Sofía García</p>
+        <div class="flex items-center justify-center gap-1 mt-1">
+          <span class="text-[12px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">6 años</span>
+          <span class="text-[12px] bg-secondary-container/10 text-secondary-container px-2 py-0.5 rounded-full">Derecha</span>
+        </div>
+        <div class="flex items-center justify-center gap-1 mt-2 text-[12px] text-on-surface-variant">
+          <span class="material-symbols-outlined text-[14px]">assignment_turned_in</span>
+          <span>15 sesiones</span>
+        </div>
+      </div>
+      <!-- Child 2 -->
+      <div class="child-card bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest cursor-pointer" onclick="navigateTo('alumno-detail')">
+        <div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary mx-auto mb-2">
+          <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">child_care</span>
+        </div>
+        <p class="font-headline-md text-[16px] text-center text-on-surface">Mateo López</p>
+        <div class="flex items-center justify-center gap-1 mt-1">
+          <span class="text-[12px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">7 años</span>
+          <span class="text-[12px] bg-secondary-container/10 text-secondary-container px-2 py-0.5 rounded-full">Izquierda</span>
+        </div>
+        <div class="flex items-center justify-center gap-1 mt-2 text-[12px] text-on-surface-variant">
+          <span class="material-symbols-outlined text-[14px]">assignment_turned_in</span>
+          <span>22 sesiones</span>
+        </div>
+      </div>
+      <!-- Child 3 -->
+      <div class="child-card bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest cursor-pointer" onclick="navigateTo('alumno-detail')">
+        <div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary mx-auto mb-2">
+          <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">child_care</span>
+        </div>
+        <p class="font-headline-md text-[16px] text-center text-on-surface">Lucía Martínez</p>
+        <div class="flex items-center justify-center gap-1 mt-1">
+          <span class="text-[12px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">5 años</span>
+          <span class="text-[12px] bg-secondary-container/10 text-secondary-container px-2 py-0.5 rounded-full">Derecha</span>
+        </div>
+        <div class="flex items-center justify-center gap-1 mt-2 text-[12px] text-on-surface-variant">
+          <span class="material-symbols-outlined text-[14px]">assignment_turned_in</span>
+          <span>8 sesiones</span>
+        </div>
+      </div>
+      <!-- Child 4 -->
+      <div class="child-card bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest cursor-pointer" onclick="navigateTo('alumno-detail')">
+        <div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary mx-auto mb-2">
+          <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">child_care</span>
+        </div>
+        <p class="font-headline-md text-[16px] text-center text-on-surface">Carlos Vega</p>
+        <div class="flex items-center justify-center gap-1 mt-1">
+          <span class="text-[12px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">6 años</span>
+          <span class="text-[12px] bg-secondary-container/10 text-secondary-container px-2 py-0.5 rounded-full">Derecha</span>
+        </div>
+        <div class="flex items-center justify-center gap-1 mt-2 text-[12px] text-on-surface-variant">
+          <span class="material-symbols-outlined text-[14px]">assignment_turned_in</span>
+          <span>10 sesiones</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state when no results -->
+    <div class="hidden text-center py-xl mt-md" id="empty-state">
+      <span class="material-symbols-outlined text-5xl text-outline-variant mb-3">child_care</span>
+      <p class="font-headline-md text-headline-md text-on-surface-variant">No se encontraron alumnos</p>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-1">Intenta con otro término de búsqueda.</p>
+    </div>
+  </main>
+
+  <!-- FAB -->
+  <div class="fab" onclick="openModal()">
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] rounded-t-xl">
+    <a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('homepage')">
+      <span class="material-symbols-outlined">home</span>
+      <span class="font-label-lg text-label-lg">Inicio</span>
+    </a>
+    <a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('alumnos')">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+      <span class="font-label-lg text-label-lg">Alumnos</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('perfil')">
+      <span class="material-symbols-outlined">person</span>
+      <span class="font-label-lg text-label-lg">Perfil</span>
+    </a>
+  </nav>
+</section>
+
+<!-- ============================================================ -->
+<!-- SCREEN: ALUMNO DETAIL                                        -->
+<!-- ============================================================ -->
+<section class="screen flex-col min-h-screen pb-24" id="screen-alumno-detail">
+  <header class="bg-surface-container-low fixed top-0 w-full z-50 shadow-sm">
+    <div class="flex items-center justify-between px-margin-mobile h-touch-target-min">
+      <div class="flex items-center gap-sm">
+        <button class="transition-all active:scale-95 text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full" onclick="navigateTo('alumnos')">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="font-headline-md text-headline-md-mobile text-primary">Sofía García</h1>
+      </div>
+      <span class="material-symbols-outlined text-primary">more_vert</span>
+    </div>
+    <!-- Tabs -->
+    <div class="flex px-margin-mobile gap-6" id="alumno-tabs">
+      <button class="tab-active py-3 font-label-lg text-label-lg transition-all" data-tab="datos" onclick="switchAlumnoTab('datos')">Datos</button>
+      <button class="tab-inactive py-3 font-label-lg text-label-lg transition-all" data-tab="sesiones" onclick="switchAlumnoTab('sesiones')">Sesiones</button>
+      <button class="tab-inactive py-3 font-label-lg text-label-lg transition-all" data-tab="metricas" onclick="switchAlumnoTab('metricas')">Métricas</button>
+    </div>
+  </header>
+
+  <main class="mt-24 px-margin-mobile max-w-2xl mx-auto w-full">
+    <!-- TAB: DATOS -->
+    <div class="alumno-tab-content" id="tab-datos">
+      <div class="bg-surface-container-lowest p-md rounded-xl soft-elevation border border-surface-container-highest space-y-4">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">child_care</span>
+          </div>
+          <div>
+            <h2 class="font-headline-md text-headline-md text-on-surface">Sofía García</h2>
+            <p class="font-body-md text-body-md text-on-surface-variant">ID: #CH-0042</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-surface-container-low p-3 rounded-lg">
+            <p class="font-label-lg text-label-lg text-on-surface-variant">Edad</p>
+            <p class="font-headline-md text-[18px] text-on-surface">6 años</p>
+          </div>
+          <div class="bg-surface-container-low p-3 rounded-lg">
+            <p class="font-label-lg text-label-lg text-on-surface-variant">Mano Dominante</p>
+            <p class="font-headline-md text-[18px] text-on-surface">Derecha</p>
+          </div>
+          <div class="bg-surface-container-low p-3 rounded-lg">
+            <p class="font-label-lg text-label-lg text-on-surface-variant">Grado</p>
+            <p class="font-headline-md text-[18px] text-on-surface">1° Primaria</p>
+          </div>
+          <div class="bg-surface-container-low p-3 rounded-lg">
+            <p class="font-label-lg text-label-lg text-on-surface-variant">Total Sesiones</p>
+            <p class="font-headline-md text-[18px] text-on-surface">15</p>
+          </div>
+        </div>
+        <div>
+          <p class="font-label-lg text-label-lg text-on-surface-variant mb-1">Notas</p>
+          <p class="font-body-md text-body-md text-on-surface bg-surface-container-low p-3 rounded-lg">Presenta leve dificultad en trazos curvos. Buena evolución en líneas rectas.</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="flex-1 h-touch-target-min bg-primary text-on-primary font-button text-button rounded-lg shadow-sm hover:brightness-110 active:scale-95 transition-all">
+            Editar Datos
+          </button>
+          <button class="h-touch-target-min px-4 border border-error text-error rounded-lg font-button flex items-center gap-1 hover:bg-error-container/20 active:scale-95 transition-all">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SESIONES -->
+    <div class="alumno-tab-content hidden" id="tab-sesiones">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-headline-md text-headline-md text-primary">Historial de Sesiones</h3>
+        <button class="h-touch-target-min px-4 bg-primary-container text-on-primary-container font-button text-button rounded-lg shadow-sm hover:bg-primary hover:text-white active:scale-95 transition-all flex items-center gap-1" onclick="openExerciseSelector()">
+          <span class="material-symbols-outlined">add</span>
+          Nueva
+        </button>
+      </div>
+      <div class="space-y-3">
+        <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-label-lg text-label-lg text-primary">Trazo de Líneas</span>
+            <span class="text-[12px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">Completada</span>
+          </div>
+          <div class="flex items-center gap-4 text-[13px] text-on-surface-variant">
+            <span>15/05/2026 10:30</span>
+            <span>•</span>
+            <span>4m 20s</span>
+            <span>•</span>
+            <span>92%</span>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button class="flex-1 h-[36px] border border-primary text-primary rounded-lg text-[13px] font-semibold hover:bg-primary/5 active:scale-95 transition-all">Ver Detalle</button>
+            <button class="h-[36px] px-3 bg-secondary-container text-white rounded-lg text-[13px] font-semibold hover:opacity-90 active:scale-95 transition-all">Repetir</button>
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-label-lg text-label-lg text-primary">Curvas Simples</span>
+            <span class="text-[12px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">Completada</span>
+          </div>
+          <div class="flex items-center gap-4 text-[13px] text-on-surface-variant">
+            <span>14/05/2026 09:15</span>
+            <span>•</span>
+            <span>5m 10s</span>
+            <span>•</span>
+            <span>78%</span>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button class="flex-1 h-[36px] border border-primary text-primary rounded-lg text-[13px] font-semibold hover:bg-primary/5 active:scale-95 transition-all">Ver Detalle</button>
+            <button class="h-[36px] px-3 bg-secondary-container text-white rounded-lg text-[13px] font-semibold hover:opacity-90 active:scale-95 transition-all">Repetir</button>
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-label-lg text-label-lg text-tertiary">Letras Individuales</span>
+            <span class="text-[12px] bg-secondary-container/10 text-secondary-container px-2 py-0.5 rounded-full font-semibold">En Progreso</span>
+          </div>
+          <div class="flex items-center gap-4 text-[13px] text-on-surface-variant">
+            <span>Hoy 11:00</span>
+            <span>•</span>
+            <span>2m 05s</span>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button class="flex-1 h-[36px] bg-primary-container text-on-primary-container rounded-lg text-[13px] font-semibold hover:bg-primary hover:text-white active:scale-95 transition-all" onclick="navigateTo('sesion-activa')">Continuar</button>
+            <button class="h-[36px] px-3 border border-error text-error rounded-lg text-[13px] font-semibold hover:bg-error-container/20 active:scale-95 transition-all" onclick="if(confirm('¿Finalizar esta sesión?'))alert('Sesión finalizada')">Terminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: MÉTRICAS -->
+    <div class="alumno-tab-content hidden" id="tab-metricas">
+      <div class="grid grid-cols-2 gap-sm mb-4">
+        <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest text-center">
+          <p class="font-label-lg text-label-lg text-on-surface-variant">Precisión Prom.</p>
+          <p class="font-headline-lg text-headline-lg text-primary mt-1">85%</p>
+          <div class="w-full bg-surface-container-highest rounded-full h-2 mt-2">
+            <div class="bg-primary rounded-full h-2 w-[85%]"></div>
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest text-center">
+          <p class="font-label-lg text-label-lg text-on-surface-variant">Estabilidad</p>
+          <p class="font-headline-lg text-headline-lg text-tertiary mt-1">72%</p>
+          <div class="w-full bg-surface-container-highest rounded-full h-2 mt-2">
+            <div class="bg-tertiary rounded-full h-2 w-[72%]"></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-sm mb-4">
+        <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest text-center">
+          <p class="font-label-lg text-label-lg text-on-surface-variant">Presión Prom.</p>
+          <p class="font-headline-md text-headline-md text-on-surface mt-1">2.4 N</p>
+        </div>
+        <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest text-center">
+          <p class="font-label-lg text-label-lg text-on-surface-variant">Temblor</p>
+          <p class="font-headline-md text-headline-md text-on-surface mt-1">Bajo</p>
+        </div>
+      </div>
+      <!-- Evolution chart -->
+      <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest">
+        <h3 class="font-label-lg text-label-lg text-primary mb-3">Evolución de Precisión</h3>
+        <div class="flex items-end justify-between h-40 px-1 gap-2">
+          <div class="flex-1 flex flex-col items-center gap-1">
+            <span class="text-[10px] text-on-surface-variant">70%</span>
+            <div class="w-full bg-surface-container rounded-t-lg h-[56%] transition-all"></div>
+            <span class="text-[10px] text-outline">Sem 1</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center gap-1">
+            <span class="text-[10px] text-on-surface-variant">75%</span>
+            <div class="w-full bg-surface-container rounded-t-lg h-[60%] transition-all"></div>
+            <span class="text-[10px] text-outline">Sem 2</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center gap-1">
+            <span class="text-[10px] text-on-surface-variant">82%</span>
+            <div class="w-full bg-primary-container rounded-t-lg h-[66%] transition-all"></div>
+            <span class="text-[10px] text-outline">Sem 3</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center gap-1">
+            <span class="text-[10px] text-on-surface-variant">85%</span>
+            <div class="w-full bg-primary-container rounded-t-lg h-[68%] transition-all"></div>
+            <span class="text-[10px] text-outline">Sem 4</span>
+          </div>
+        </div>
+      </div>
+      <!-- Exercise breakdown -->
+      <div class="bg-surface-container-lowest p-4 rounded-xl soft-elevation border border-surface-container-highest mt-4">
+        <h3 class="font-label-lg text-label-lg text-primary mb-3">Desempeño por Ejercicio</h3>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-body-md text-body-md text-on-surface">Líneas Verticales</span>
+            <span class="font-label-lg text-label-lg text-primary">94%</span>
+          </div>
+          <div class="w-full bg-surface-container-highest rounded-full h-2">
+            <div class="bg-primary rounded-full h-2 w-[94%]"></div>
+          </div>
+          <div class="flex items-center justify-between mt-2">
+            <span class="font-body-md text-body-md text-on-surface">Curvas</span>
+            <span class="font-label-lg text-label-lg text-tertiary">72%</span>
+          </div>
+          <div class="w-full bg-surface-container-highest rounded-full h-2">
+            <div class="bg-tertiary rounded-full h-2 w-[72%]"></div>
+          </div>
+          <div class="flex items-center justify-between mt-2">
+            <span class="font-body-md text-body-md text-on-surface">Letras</span>
+            <span class="font-label-lg text-label-lg text-secondary-container">68%</span>
+          </div>
+          <div class="w-full bg-surface-container-highest rounded-full h-2">
+            <div class="bg-secondary-container rounded-full h-2 w-[68%]"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Nav -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] rounded-t-xl">
+    <a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('homepage')">
+      <span class="material-symbols-outlined">home</span>
+      <span class="font-label-lg text-label-lg">Inicio</span>
+    </a>
+    <a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('alumnos')">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+      <span class="font-label-lg text-label-lg">Alumnos</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('perfil')">
+      <span class="material-symbols-outlined">person</span>
+      <span class="font-label-lg text-label-lg">Perfil</span>
+    </a>
+  </nav>
+</section>
+
+<!-- ============================================================ -->
+<!-- SCREEN: SESIÓN ACTIVA                                        -->
+<!-- ============================================================ -->
+<section class="screen flex-col min-h-screen" id="screen-sesion-activa">
+  <header class="bg-surface-container-low shadow-sm fixed top-0 w-full z-50">
+    <div class="flex items-center justify-between px-margin-mobile h-touch-target-min">
+      <div class="flex items-center gap-sm">
+        <button class="transition-all active:scale-95 text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full" onclick="stopTimer(); navigateTo('alumno-detail')">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div>
+          <h1 class="font-headline-md text-headline-md-mobile text-primary" id="sesion-alumno-nombre">Sofía García</h1>
+          <p class="text-[12px] text-on-surface-variant -mt-1" id="sesion-ejercicio-nombre">Trazo de Líneas</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1 px-3 py-1 bg-surface-container rounded-full border border-outline-variant">
+          <span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+          <span class="text-[12px] font-semibold text-on-surface">Lápiz</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant">battery_horiz_075</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 mt-[48px] p-margin-mobile flex flex-col gap-md min-h-[calc(100dvh-48px)]">
+    <!-- Status badge -->
+    <div class="flex items-center justify-center mt-4">
+      <span class="px-4 py-1.5 rounded-full font-label-lg text-label-lg" id="sesion-status-badge">● No iniciada</span>
+    </div>
+
+    <!-- Timer -->
+    <div class="flex-1 flex flex-col items-center justify-center">
+      <div class="relative w-56 h-56 rounded-full bg-surface-container-lowest shadow-soft border border-surface-container-highest flex flex-col items-center justify-center">
+        <div class="absolute inset-0 rounded-full border-8 border-surface-container-highest">
+          <div class="w-full h-full rounded-full border-8 border-transparent" id="timer-ring" style="clip-path: inset(0 50% 0 0);"></div>
+        </div>
+        <span class="font-headline-lg text-[48px] text-on-surface tabular-nums tracking-tight" id="timer-display">00:00</span>
+        <span class="font-label-lg text-label-lg text-on-surface-variant">min:seg</span>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="flex flex-col gap-3 pb-safe">
+      <button class="w-full h-touch-target-min bg-primary-container text-on-primary-container font-button text-button rounded-full shadow-md hover:bg-primary hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2" id="btn-iniciar-sesion" onclick="startTimer()">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        Iniciar Sesión
+      </button>
+      <button class="w-full h-touch-target-min bg-secondary-container text-white font-button text-button rounded-full shadow-md hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed" id="btn-terminar-sesion" onclick="endTimer()" disabled>
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">stop</span>
+        Terminar Sesión
+      </button>
+    </div>
+  </main>
+</section>
+
+<!-- ============================================================ -->
+<!-- SCREEN: PERFIL                                               -->
+<!-- ============================================================ -->
+<section class="screen flex-col min-h-screen pb-24" id="screen-perfil">
+  <header class="bg-surface-container-low fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target-min shadow-sm">
+    <h1 class="font-headline-md text-headline-md text-primary">Perfil</h1>
+    <span class="material-symbols-outlined text-primary">battery_horiz_075</span>
+  </header>
+
+  <main class="mt-20 px-margin-mobile max-w-2xl mx-auto w-full space-y-md">
+    <div class="flex flex-col items-center py-lg">
+      <div class="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center text-primary mb-3">
+        <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">person</span>
+      </div>
+      <h2 class="font-headline-md text-headline-md text-on-surface">Juan Pérez</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">juan@ejemplo.com</p>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-elevation border border-surface-container-highest divide-y divide-outline-variant/30">
+      <div class="flex items-center justify-between p-gutter">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary">edit_note</span>
+          <span class="font-body-lg text-body-lg text-on-surface">Editar Perfil</span>
+        </div>
+        <span class="material-symbols-outlined text-outline-variant text-lg">chevron_right</span>
+      </div>
+      <div class="flex items-center justify-between p-gutter">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary">notifications</span>
+          <span class="font-body-lg text-body-lg text-on-surface">Notificaciones</span>
+        </div>
+        <span class="material-symbols-outlined text-outline-variant text-lg">chevron_right</span>
+      </div>
+      <div class="flex items-center justify-between p-gutter">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary">info</span>
+          <span class="font-body-lg text-body-lg text-on-surface">Acerca de</span>
+        </div>
+        <span class="material-symbols-outlined text-outline-variant text-lg">chevron_right</span>
+      </div>
+    </div>
+
+    <button class="w-full h-touch-target-min border-2 border-error text-error font-button text-button rounded-xl hover:bg-error-container/10 active:scale-95 transition-all flex items-center justify-center gap-2" onclick="navigateTo('login')">
+      <span class="material-symbols-outlined">logout</span>
+      Cerrar Sesión
+    </button>
+  </main>
+
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] rounded-t-xl">
+    <a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('homepage')">
+      <span class="material-symbols-outlined">home</span>
+      <span class="font-label-lg text-label-lg">Inicio</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('alumnos')">
+      <span class="material-symbols-outlined">group</span>
+      <span class="font-label-lg text-label-lg">Alumnos</span>
+    </a>
+    <a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 active:scale-90 transition-transform cursor-pointer" onclick="navigateTo('perfil')">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+      <span class="font-label-lg text-label-lg">Perfil</span>
+    </a>
+  </nav>
+</section>
+
+<!-- ============================================================ -->
+<!-- MODAL: Select Exercise                                      -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="modal-select-ejercicio">
+  <div class="bg-surface-container-lowest rounded-2xl w-full max-w-[400px] p-md shadow-2xl">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-headline-md text-headline-md text-on-surface">Nueva Sesión</h2>
+      <button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" onclick="closeExerciseSelector()">
+        <span class="material-symbols-outlined text-on-surface-variant">close</span>
+      </button>
+    </div>
+    <p class="font-body-md text-body-md text-on-surface-variant mb-4">Selecciona el tipo de ejercicio para <strong>Sofía García</strong>:</p>
+    <div class="space-y-2 max-h-[320px] overflow-y-auto">
+      <div class="flex items-center gap-3 p-3 rounded-xl border border-outline-variant cursor-pointer hover:bg-surface-container-low transition-all active:scale-[0.98]" onclick="selectExercise('Líneas Verticales')">
+        <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined">straighten</span>
+        </div>
+        <div>
+          <p class="font-label-lg text-label-lg text-on-surface">Líneas Verticales</p>
+          <p class="text-[12px] text-on-surface-variant">Trazo recto vertical</p>
+        </div>
+        <span class="material-symbols-outlined text-outline-variant ml-auto">chevron_right</span>
+      </div>
+      <div class="flex items-center gap-3 p-3 rounded-xl border border-outline-variant cursor-pointer hover:bg-surface-container-low transition-all active:scale-[0.98]" onclick="selectExercise('Líneas Horizontales')">
+        <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined">horizontal_rule</span>
+        </div>
+        <div>
+          <p class="font-label-lg text-label-lg text-on-surface">Líneas Horizontales</p>
+          <p class="text-[12px] text-on-surface-variant">Trazo recto horizontal</p>
+        </div>
+        <span class="material-symbols-outlined text-outline-variant ml-auto">chevron_right</span>
+      </div>
+      <div class="flex items-center gap-3 p-3 rounded-xl border border-outline-variant cursor-pointer hover:bg-surface-container-low transition-all active:scale-[0.98]" onclick="selectExercise('Curvas Simples')">
+        <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined">swap_vert</span>
+        </div>
+        <div>
+          <p class="font-label-lg text-label-lg text-on-surface">Curvas Simples</p>
+          <p class="text-[12px] text-on-surface-variant">Fluidez de muñeca</p>
+        </div>
+        <span class="material-symbols-outlined text-outline-variant ml-auto">chevron_right</span>
+      </div>
+      <div class="flex items-center gap-3 p-3 rounded-xl border border-outline-variant cursor-pointer hover:bg-surface-container-low transition-all active:scale-[0.98]" onclick="selectExercise('Círculos')">
+        <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined">circle</span>
+        </div>
+        <div>
+          <p class="font-label-lg text-label-lg text-on-surface">Círculos</p>
+          <p class="text-[12px] text-on-surface-variant">Coordinación motriz fina</p>
+        </div>
+        <span class="material-symbols-outlined text-outline-variant ml-auto">chevron_right</span>
+      </div>
+      <div class="flex items-center gap-3 p-3 rounded-xl border border-outline-variant cursor-pointer hover:bg-surface-container-low transition-all active:scale-[0.98]" onclick="selectExercise('Letras Individuales')">
+        <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined">text_fields</span>
+        </div>
+        <div>
+          <p class="font-label-lg text-label-lg text-on-surface">Letras Individuales</p>
+          <p class="text-[12px] text-on-surface-variant">Escritura real</p>
+        </div>
+        <span class="material-symbols-outlined text-outline-variant ml-auto">chevron_right</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL: Add Student                                           -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="modal-add-alumno">
+  <div class="bg-surface-container-lowest rounded-2xl w-full max-w-[400px] p-md shadow-2xl">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-headline-md text-headline-md text-on-surface">Nuevo Alumno</h2>
+      <button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" onclick="closeModal()">
+        <span class="material-symbols-outlined text-on-surface-variant">close</span>
+      </button>
+    </div>
+    <form class="space-y-3" onsubmit="closeModal(); return false;">
+      <div>
+        <label class="font-label-lg text-label-lg text-on-surface-variant ml-1" for="child-name">Nombre Completo</label>
+        <input class="w-full h-touch-target-min px-4 bg-white border border-outline rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="child-name" placeholder="Nombre del alumno" required type="text"/>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="font-label-lg text-label-lg text-on-surface-variant ml-1" for="child-birth">Fecha Nac.</label>
+          <input class="w-full h-touch-target-min px-4 bg-white border border-outline rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="child-birth" type="date"/>
+        </div>
+        <div>
+          <label class="font-label-lg text-label-lg text-on-surface-variant ml-1" for="child-hand">Mano Dominante</label>
+          <select class="w-full h-touch-target-min px-4 bg-white border border-outline rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="child-hand">
+            <option>Derecha</option>
+            <option>Izquierda</option>
+            <option>Ambidiestro</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="font-label-lg text-label-lg text-on-surface-variant ml-1" for="child-grade">Grado Escolar</label>
+        <input class="w-full h-touch-target-min px-4 bg-white border border-outline rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" id="child-grade" placeholder="Ej. 1° Primaria" type="text"/>
+      </div>
+      <div>
+        <label class="font-label-lg text-label-lg text-on-surface-variant ml-1" for="child-notes">Notas (opcional)</label>
+        <textarea class="w-full px-4 py-3 bg-white border border-outline rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none" id="child-notes" placeholder="Observaciones..." rows="3"></textarea>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button class="flex-1 h-touch-target-min bg-surface-container-highest text-on-surface font-button text-button rounded-lg hover:brightness-95 transition-all" onclick="closeModal()" type="button">Cancelar</button>
+        <button class="flex-1 h-touch-target-min bg-primary-container text-on-primary-container font-button text-button rounded-lg shadow-sm hover:bg-primary hover:text-white active:scale-95 transition-all" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- GLOBAL SCRIPT                                                -->
+<!-- ============================================================ -->
+<script>
+function navigateTo(screenId) {
+  const current = document.querySelector('.screen.active');
+  if (current && current.id === 'screen-sesion-activa' && screenId !== 'sesion-activa') {
+    stopTimer();
+  }
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('screen-' + screenId);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  closeModal();
+}
+
+function togglePassword(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.innerText = 'visibility_off';
+  } else {
+    input.type = 'password';
+    icon.innerText = 'visibility';
+  }
+}
+
+// Alumno search filter
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'search-alumnos') {
+    const query = e.target.value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.child-card');
+    let visibleCount = 0;
+    cards.forEach(card => {
+      const name = card.querySelector('p').textContent.toLowerCase();
+      const matches = name.includes(query);
+      card.style.display = matches ? '' : 'none';
+      if (matches) visibleCount++;
+    });
+    document.getElementById('empty-state').classList.toggle('hidden', visibleCount > 0);
+  }
+});
+
+function switchAlumnoTab(tabName) {
+  document.querySelectorAll('.alumno-tab-content').forEach(t => t.classList.add('hidden'));
+  document.getElementById('tab-' + tabName).classList.remove('hidden');
+  document.querySelectorAll('#alumno-tabs button').forEach(btn => {
+    btn.classList.remove('tab-active');
+    btn.classList.add('tab-inactive');
+  });
+  const activeBtn = document.querySelector(`#alumno-tabs button[data-tab="${tabName}"]`);
+  if (activeBtn) {
+    activeBtn.classList.remove('tab-inactive');
+    activeBtn.classList.add('tab-active');
+  }
+}
+
+function openModal() {
+  document.getElementById('modal-add-alumno').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal-add-alumno').classList.remove('active');
+}
+
+// Close modal on overlay click
+document.getElementById('modal-add-alumno').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('modal-select-ejercicio').addEventListener('click', function(e) {
+  if (e.target === this) closeExerciseSelector();
+});
+
+// --- Exercise Selector ---
+function openExerciseSelector() {
+  document.getElementById('modal-select-ejercicio').classList.add('active');
+}
+
+function closeExerciseSelector() {
+  document.getElementById('modal-select-ejercicio').classList.remove('active');
+}
+
+function selectExercise(name) {
+  closeExerciseSelector();
+  document.getElementById('sesion-ejercicio-nombre').textContent = name;
+  resetTimer();
+  navigateTo('sesion-activa');
+}
+
+// --- Timer ---
+let timerInterval = null;
+let seconds = 0;
+let isRunning = false;
+
+function resetTimer() {
+  stopTimer();
+  seconds = 0;
+  isRunning = false;
+  document.getElementById('timer-display').textContent = '00:00';
+  document.getElementById('sesion-status-badge').textContent = '● No iniciada';
+  document.getElementById('sesion-status-badge').className = 'px-4 py-1.5 rounded-full font-label-lg text-label-lg text-on-surface-variant bg-surface-container';
+  document.getElementById('btn-iniciar-sesion').disabled = false;
+  document.getElementById('btn-iniciar-sesion').classList.remove('opacity-40', 'cursor-not-allowed');
+  document.getElementById('btn-terminar-sesion').disabled = true;
+  document.getElementById('btn-terminar-sesion').classList.add('opacity-40', 'cursor-not-allowed');
+  document.getElementById('timer-ring').style.borderColor = 'transparent';
+}
+
+function startTimer() {
+  if (isRunning) return;
+  isRunning = true;
+  document.getElementById('sesion-status-badge').textContent = '● En progreso';
+  document.getElementById('sesion-status-badge').className = 'px-4 py-1.5 rounded-full font-label-lg text-label-lg text-primary bg-primary/10';
+  document.getElementById('btn-iniciar-sesion').disabled = true;
+  document.getElementById('btn-iniciar-sesion').classList.add('opacity-40', 'cursor-not-allowed');
+  document.getElementById('btn-terminar-sesion').disabled = false;
+  document.getElementById('btn-terminar-sesion').classList.remove('opacity-40', 'cursor-not-allowed');
+  document.getElementById('timer-ring').style.borderColor = '#004ac6';
+
+  timerInterval = setInterval(function() {
+    seconds++;
+    const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const secs = String(seconds % 60).padStart(2, '0');
+    document.getElementById('timer-display').textContent = mins + ':' + secs;
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function endTimer() {
+  if (!isRunning) return;
+  stopTimer();
+  isRunning = false;
+  document.getElementById('sesion-status-badge').textContent = '● Finalizada';
+  document.getElementById('sesion-status-badge').className = 'px-4 py-1.5 rounded-full font-label-lg text-label-lg text-secondary-container bg-secondary-container/10';
+  document.getElementById('btn-terminar-sesion').disabled = true;
+  document.getElementById('btn-terminar-sesion').classList.add('opacity-40', 'cursor-not-allowed');
+  document.getElementById('timer-ring').style.borderColor = '#fd761a';
+  setTimeout(function() {
+    navigateTo('alumno-detail');
+  }, 1200);
+}
+</script>
+</body>
+</html>

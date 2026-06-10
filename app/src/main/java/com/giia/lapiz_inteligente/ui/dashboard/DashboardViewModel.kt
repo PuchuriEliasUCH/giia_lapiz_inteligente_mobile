@@ -20,18 +20,23 @@ class DashboardViewModel @Inject constructor(
     private val _state = MutableStateFlow<DashboardUiState>(DashboardUiState.Loading)
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
 
-    fun loadDashboard() {
+    fun loadDashboard(childId: Int? = null) {
         _state.value = DashboardUiState.Loading
         viewModelScope.launch {
-            val childrenResult = childRepository.getChildren()
-            val activeChildren = childrenResult.getOrNull().orEmpty().filter { it.is_active }
-            if (activeChildren.isEmpty()) {
-                _state.value = DashboardUiState.Empty
-                return@launch
+            val targetChildId = if (childId != null) {
+                childId
+            } else {
+                val childrenResult = childRepository.getChildren()
+                val activeChildren = childrenResult.getOrNull().orEmpty().filter { it.is_active }
+                if (activeChildren.isEmpty()) {
+                    _state.value = DashboardUiState.Empty
+                    return@launch
+                }
+                activeChildren.first().child_id
             }
-            val childId = activeChildren.first().child_id
-            val summaryResult = dashboardRepository.getDashboardSummary(childId)
-            val sessionsResult = dashboardRepository.getRecentSessions(childId)
+
+            val summaryResult = dashboardRepository.getDashboardSummary(targetChildId)
+            val sessionsResult = dashboardRepository.getRecentSessions(targetChildId)
 
             summaryResult.fold(
                 onSuccess = { summary ->

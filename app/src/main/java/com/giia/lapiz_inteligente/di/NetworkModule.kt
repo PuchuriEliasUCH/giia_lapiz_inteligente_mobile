@@ -1,10 +1,12 @@
 package com.giia.lapiz_inteligente.di
 
 import com.giia.lapiz_inteligente.data.remote.ApiService
+import com.giia.lapiz_inteligente.data.remote.BaseUrlHolder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -14,8 +16,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-    private const val BASE_URL = "http://192.168.0.73:8001/"
 
     @Provides
     @Singleton
@@ -27,9 +27,29 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor,
+        baseUrlHolder: BaseUrlHolder
+    ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
+            .addInterceptor { chain ->
+                val original = chain.request()
+                val baseUrl = baseUrlHolder.get()
+                val baseHttpUrl = baseUrl.toHttpUrlOrNull() ?: return@addInterceptor chain.proceed(original)
+
+                val newUrl = original.url.newBuilder()
+                    .scheme(baseHttpUrl.scheme)
+                    .host(baseHttpUrl.host)
+                    .port(baseHttpUrl.port)
+                    .build()
+
+                val newRequest = original.newBuilder()
+                    .url(newUrl)
+                    .build()
+
+                chain.proceed(newRequest)
+            }
             .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
             .readTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
             .writeTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
@@ -40,7 +60,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl("http://placeholder.local/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

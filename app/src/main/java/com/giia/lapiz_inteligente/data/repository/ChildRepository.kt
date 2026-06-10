@@ -19,15 +19,32 @@ class ChildRepository @Inject constructor(
         return "Bearer $token"
     }
 
-    suspend fun getChildren(): Result<List<ChildResponse>> {
+    suspend fun getChildren(isActive: Boolean? = null): Result<List<ChildResponse>> {
         return try {
             val token = getBearerToken()
-            Result.success(apiService.getChildren(token))
+            Result.success(apiService.getChildren(token, isActive))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
             when (e.code()) {
                 401 -> Result.failure(Exception("Sesión expirada. Inicia sesión nuevamente."))
+                else -> Result.failure(Exception("Error del servidor (${e.code()})."))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Error desconocido: ${e.message}"))
+        }
+    }
+
+    suspend fun getChild(childId: Int): Result<ChildResponse> {
+        return try {
+            val token = getBearerToken()
+            Result.success(apiService.getChild(token, childId))
+        } catch (e: IOException) {
+            Result.failure(Exception("Error de conexión. Verifica tu internet."))
+        } catch (e: HttpException) {
+            when (e.code()) {
+                401 -> Result.failure(Exception("Sesión expirada. Inicia sesión nuevamente."))
+                404 -> Result.failure(Exception("Niño no encontrado."))
                 else -> Result.failure(Exception("Error del servidor (${e.code()})."))
             }
         } catch (e: Exception) {

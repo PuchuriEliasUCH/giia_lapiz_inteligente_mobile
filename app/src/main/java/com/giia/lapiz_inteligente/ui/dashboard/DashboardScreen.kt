@@ -3,81 +3,80 @@ package com.giia.lapiz_inteligente.ui.dashboard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.giia.lapiz_inteligente.ui.sessions.SessionCard
+import com.giia.lapiz_inteligente.models.session.SessionResponse
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    onNavigateBack: () -> Unit,
-    onNavigateToSessionMetrics: (Int) -> Unit,
+    userName: String?,
+    onNavigateToSessionDetail: (Int) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.loadDashboard()
+        viewModel.loadDashboard(null)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Dashboard de Métricas") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Hola, ${userName ?: "Usuario"}",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "Resumen general de tu progreso y alumnos.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            when (val current = state) {
-                is DashboardUiState.Loading -> {
+
+        when (val current = state) {
+            is DashboardUiState.Loading -> {
+                item {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator()
                     }
                 }
+            }
 
-                is DashboardUiState.Error -> {
+            is DashboardUiState.Error -> {
+                item {
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
                     ) {
                         Text(
                             text = current.message,
@@ -85,148 +84,114 @@ fun DashboardScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadDashboard() }) {
+                        Button(onClick = { viewModel.loadDashboard(null) }) {
                             Text("Reintentar")
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = onNavigateBack) {
-                            Text("Volver")
                         }
                     }
                 }
+            }
 
-                is DashboardUiState.Empty -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+            is DashboardUiState.Empty -> {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "No hay datos de sesiones aún.",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadDashboard() }) {
-                            Text("Reintentar")
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = onNavigateBack) {
-                            Text("Volver")
+                    }
+                }
+            }
+
+            is DashboardUiState.Success -> {
+                val s = current.summary
+                val displayPrecision = s.avgPressure?.let { "${(it * 100).toInt()}%" } ?: "—"
+                val displaySessions = s.totalSessions.toString()
+
+                item {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        MetricCard(
+                            label = "Sesiones",
+                            value = displaySessions,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        MetricCard(
+                            label = "Rendimiento",
+                            value = s.performanceLevel,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "Actividad Reciente",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            if (current.recentSessions.isEmpty()) {
+                                Text(
+                                    text = "No hay actividad reciente.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                current.recentSessions.take(5).forEach { session ->
+                                    Text(
+                                        text = "Sesión #${session.session_id} — ${session.started_at.take(10)}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
                         }
                     }
                 }
 
-                is DashboardUiState.Success -> {
-                    DashboardContent(
-                        summary = current.summary,
-                        recentSessions = current.recentSessions,
-                        onSessionClick = onNavigateToSessionMetrics,
-                        onRefresh = { viewModel.loadDashboard() }
-                    )
-                }
+                item { Spacer(modifier = Modifier.height(16.dp)) }
             }
         }
     }
 }
 
 @Composable
-private fun DashboardContent(
-    summary: com.giia.lapiz_inteligente.models.dashboard.DashboardSummary,
-    recentSessions: List<com.giia.lapiz_inteligente.models.session.SessionResponse>,
-    onSessionClick: (Int) -> Unit,
-    onRefresh: () -> Unit
+private fun MetricCard(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(16.dp)
-    ) {
-        item {
-            SummaryCard(summary)
-        }
-
-        item {
-            PressureCard(
-                avgPressure = summary.avgPressure,
-                maxPressure = summary.maxPressure
-            )
-        }
-
-        item {
-            StabilityCard(
-                pressureStability = summary.avgPressureStability,
-                movementStability = summary.avgMovementStability
-            )
-        }
-
-        item {
-            TremorCard(tremorLevel = summary.avgTremorLevel)
-        }
-
-        item {
-            PostureCard(postureScore = summary.avgPostureScore)
-        }
-
-        if (recentSessions.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Sesiones Recientes",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
-            items(recentSessions, key = { it.session_id }) { session ->
-                SessionCard(session = session)
-            }
-        }
-    }
-}
-
-@Composable
-private fun SummaryCard(summary: com.giia.lapiz_inteligente.models.dashboard.DashboardSummary) {
-    val levelColor = when (summary.performanceLevel) {
-        "Excelente" -> Color(0xFF2E7D32)
-        "Bueno" -> Color(0xFFF57F17)
-        "Regular" -> Color(0xFFF57F17)
-        "Mejorable" -> Color(0xFFC62828)
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-        shape = MaterialTheme.shapes.large
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Resumen General",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Nivel: ${summary.performanceLevel}",
-                style = MaterialTheme.typography.headlineSmall,
-                color = levelColor
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Sesiones realizadas: ${summary.totalSessions}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                text = value,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
-            if (summary.recommendation != null) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = summary.recommendation,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
         }
     }
 }

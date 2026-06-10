@@ -1,9 +1,11 @@
 package com.giia.lapiz_inteligente.domain.exercise
 
 import com.giia.lapiz_inteligente.data.repository.ExerciseRepository
+import com.giia.lapiz_inteligente.models.exercise.CreateExerciseRequest
 import com.giia.lapiz_inteligente.models.exercise.ExerciseDetailResponse
 import com.giia.lapiz_inteligente.models.exercise.ExerciseResponse
 import com.giia.lapiz_inteligente.models.exercise.StrokeTypeResponse
+import com.giia.lapiz_inteligente.models.exercise.UpdateExerciseRequest
 import javax.inject.Inject
 
 /**
@@ -52,5 +54,30 @@ class ExerciseUseCase @Inject constructor(
      */
     suspend fun getExerciseDetail(exerciseId: Int): Result<ExerciseDetailResponse> {
         return exerciseRepository.getExerciseDetail(exerciseId)
+    }
+
+    suspend fun createExercise(
+        name: String,
+        description: String?,
+        strokeTypeId: Int
+    ): Result<ExerciseResponse> {
+        return exerciseRepository.createExercise(
+            CreateExerciseRequest(name = name, description = description, stroke_type_id = strokeTypeId)
+        )
+    }
+
+    suspend fun updateExercise(
+        exerciseId: Int,
+        name: String?,
+        description: String?
+    ): Result<ExerciseResponse> {
+        return exerciseRepository.updateExercise(
+            exerciseId,
+            UpdateExerciseRequest(name = name, description = description)
+        )
+    }
+
+    suspend fun deactivateExercise(exerciseId: Int): Result<ExerciseResponse> {
+        return exerciseRepository.deactivateExercise(exerciseId)
     }
 }

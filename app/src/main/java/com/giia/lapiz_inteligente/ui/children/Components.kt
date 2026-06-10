@@ -14,6 +14,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,6 +30,7 @@ fun ChildCard(
     child: ChildResponse,
     onEdit: () -> Unit,
     onDeactivate: () -> Unit,
+    onViewMetrics: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -66,8 +72,18 @@ fun ChildCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton(onClick = onViewMetrics) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Ver métricas",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
                 Button(
                     onClick = onEdit,
                     modifier = Modifier.padding(end = 8.dp)

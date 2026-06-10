@@ -5,6 +5,6 @@ import com.google.gson.annotations.SerializedName
 data class StrokeTypeResponse(
     @SerializedName("stroke_type_id")
     val id: Int,
-    val name: String?,
-    val description: String?
+    val name: String,
+    val created_at: String
 )

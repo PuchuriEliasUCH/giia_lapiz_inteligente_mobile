@@ -103,13 +103,52 @@ OnSecondary: "#FFFFFF"
 
 Surface: "#F8F9FF"
 OnSurface: "#121C2A"
+OnSurfaceVariant: "#434655"
 
-Background: "#FFFFFF"
+Background: "#F8F9FF"
 OnBackground: "#121C2A"
 
 Error: "#BA1A1A"
 OnError: "#FFFFFF"
 ```
+
+---
+
+## Surface Containers
+
+Used for layering and visual hierarchy within screens.
+
+```yaml
+SurfaceContainerLowest: "#FFFFFF"
+SurfaceContainerLow:    "#EFF4FF"
+SurfaceContainer:       "#E6EEFF"
+SurfaceContainerHigh:   "#DEE9FC"
+SurfaceContainerHighest:"#D9E3F6"
+```
+
+Usage:
+
+| Token                   | Use case                              |
+| ----------------------- | ------------------------------------- |
+| SurfaceContainerLowest  | Cards, input backgrounds              |
+| SurfaceContainerLow     | Screen backgrounds, list items        |
+| SurfaceContainer        | Secondary sections, grouped content   |
+| SurfaceContainerHigh    | Navigation bars, bottom sheets        |
+| SurfaceContainerHighest | Dialogs, modals, elevated overlays    |
+
+---
+
+## Outline Colors
+
+```yaml
+Outline:        "#737686"
+OutlineVariant: "#C3C6D7"
+```
+
+Usage:
+
+* `Outline` — borders on input fields, dividers
+* `OutlineVariant` — subtle separators, inactive states
 
 ---
 
@@ -388,9 +427,31 @@ Main user action.
 Properties:
 
 * Filled
-* Primary color
+* Primary color (`#2563EB`)
 * White text
 * Minimum height 48dp
+
+Focus state:
+
+* 2dp border in Secondary (`#F97316`)
+* Elevation increases to 4dp
+
+---
+
+## CTA Button
+
+Purpose:
+
+Final or irreversible actions only (Submit, Save Session, Confirm).
+
+Properties:
+
+* Filled
+* Secondary color (`#F97316`)
+* White text
+* Minimum height 48dp
+
+Do not use CTA for navigation or secondary actions.
 
 ---
 
@@ -403,8 +464,13 @@ Alternative actions.
 Properties:
 
 * Outlined
-* Primary color border
+* Primary color border (`#2563EB`)
 * Transparent background
+
+Focus state:
+
+* Border thickens to 2dp
+* Border color changes to Secondary (`#F97316`)
 
 ---
 
@@ -432,6 +498,37 @@ Requirements:
 * Error state support
 
 Never rely only on placeholders.
+
+States:
+
+| State   | Border width | Border color         | Background              |
+| ------- | ------------ | -------------------- | ----------------------- |
+| Default | 1dp          | Outline (`#737686`)  | SurfaceContainerLowest  |
+| Focused | 2dp          | Primary (`#2563EB`)  | SurfaceContainerLowest  |
+| Error   | 2dp          | Error (`#BA1A1A`)    | SurfaceContainerLowest  |
+
+---
+
+## Tooltips
+
+Purpose:
+
+Provide immediate contextual guidance without leaving the screen.
+
+Properties:
+
+* Background: `OnSurface` (`#121C2A`)
+* Text color: `#FFFFFF`
+* Text size: 14sp
+* Padding: 8dp horizontal, 4dp vertical
+* Corner radius: 4dp (Small)
+* Maximum width: 200dp
+
+Trigger:
+
+* Long press on help icons or ambiguous interactive elements
+
+Never use tooltips as a substitute for persistent labels on inputs.
 
 ---
 
@@ -673,4 +770,3 @@ When generating UI:
 * Respect semantic colors.
 
 This document overrides any design assumptions made by AI coding assistants.
-

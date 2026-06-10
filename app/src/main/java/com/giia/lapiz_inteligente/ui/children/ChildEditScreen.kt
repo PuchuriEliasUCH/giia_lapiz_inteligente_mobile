@@ -1,6 +1,7 @@
 package com.giia.lapiz_inteligente.ui.children
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,12 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -24,8 +27,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,17 +54,61 @@ fun ChildEditScreen(
     onNavigateBack: () -> Unit,
     viewModel: ChildrenViewModel = hiltViewModel()
 ) {
-    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
-    val dominantHandOptions = listOf("derecha", "izquierda", "ambidiestro")
+    val uiState by viewModel.uiState.collectAsState()
 
-    val existingChild = remember(viewModel.uiState.value, childId) {
-        val state = viewModel.uiState.value
+    LaunchedEffect(Unit) {
+        if (uiState !is ChildUiState.Success) {
+            viewModel.loadChildren()
+        }
+    }
+
+    val existingChild = remember(uiState, childId) {
+        val state = uiState
         if (state is ChildUiState.Success) {
             state.children.find { it.child_id == childId }
         } else null
     }
 
-    var name by remember { mutableStateOf(currentName) }
+    if (uiState is ChildUiState.Loading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    if (existingChild == null && uiState is ChildUiState.Error) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = "Error al cargar datos del niño.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+        return
+    }
+
+    ChildEditForm(
+        childId = childId,
+        existingChild = existingChild,
+        currentName = currentName,
+        onNavigateBack = onNavigateBack,
+        viewModel = viewModel
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChildEditForm(
+    childId: Int,
+    existingChild: com.giia.lapiz_inteligente.models.child.ChildResponse?,
+    currentName: String,
+    onNavigateBack: () -> Unit,
+    viewModel: ChildrenViewModel
+) {
+    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
+    val dominantHandOptions = listOf("derecha", "izquierda", "ambidiestro")
+
+    var name by remember { mutableStateOf(currentName.ifBlank { existingChild?.name ?: "" }) }
     var birthDateMillis by remember { mutableStateOf<Long?>(null) }
     var birthDateText by remember { mutableStateOf(existingChild?.birth_date ?: "") }
     var dominantHand by remember { mutableStateOf(existingChild?.dominant_hand ?: "") }
@@ -65,17 +117,6 @@ fun ChildEditScreen(
     var nameError by remember { mutableStateOf<String?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
     var dropdownExpanded by remember { mutableStateOf(false) }
-    var initialized by remember { mutableStateOf(false) }
-
-    LaunchedEffect(existingChild) {
-        if (existingChild != null && !initialized) {
-            birthDateText = existingChild.birth_date ?: ""
-            dominantHand = existingChild.dominant_hand ?: ""
-            schoolGrade = existingChild.school_grade ?: ""
-            notes = existingChild.notes ?: ""
-            initialized = true
-        }
-    }
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(initialSelectedDateMillis = birthDateMillis)
@@ -104,9 +145,17 @@ fun ChildEditScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Editar Niño") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -187,7 +236,7 @@ fun ChildEditScreen(
             OutlinedTextField(
                 value = schoolGrade,
                 onValueChange = { schoolGrade = it },
-                    label = { Text("Grado Escolar") },
+                label = { Text("Grado Escolar") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -197,7 +246,7 @@ fun ChildEditScreen(
             OutlinedTextField(
                 value = notes,
                 onValueChange = { notes = it },
-                    label = { Text("Observaciones") },
+                label = { Text("Observaciones") },
                 minLines = 3,
                 maxLines = 5,
                 modifier = Modifier.fillMaxWidth()
@@ -208,8 +257,8 @@ fun ChildEditScreen(
             Button(
                 onClick = {
                     when {
-                        name.isBlank() ->                         nameError = "El nombre no puede estar vacío"
-                        name.length < 2 ->                         nameError = "El nombre debe tener al menos 2 caracteres"
+                        name.isBlank() -> nameError = "El nombre no puede estar vacío"
+                        name.length < 2 -> nameError = "El nombre debe tener al menos 2 caracteres"
                         else -> {
                             nameError = null
                             viewModel.updateChild(

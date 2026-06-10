@@ -39,18 +39,18 @@ class RegisterViewModelTest {
 
     @Test
     fun `register sets Loading then Success on success`() = runTest(testDispatcher) {
-        coEvery { authRepository.register(any(), any(), any(), any()) } returns Result.success(mockk())
+        coEvery { authRepository.register(any(), any(), any(), any(), any()) } returns Result.success(mockk())
 
         viewModel.register("Juan", "Perez", "juan@example.com", "password123")
 
         testDispatcher.scheduler.advanceUntilIdle()
         assert(viewModel.uiState.value is AuthUiState.Success)
-        coVerify { authRepository.register("Juan", "Perez", "juan@example.com", "password123") }
+        coVerify { authRepository.register("Juan", "Perez", "juan@example.com", "password123", any()) }
     }
 
     @Test
     fun `register sets Error on failure`() = runTest(testDispatcher) {
-        coEvery { authRepository.register(any(), any(), any(), any()) } returns Result.failure(Exception("Email already registered"))
+        coEvery { authRepository.register(any(), any(), any(), any(), any()) } returns Result.failure(Exception("Email already registered"))
 
         viewModel.register("Juan", "Perez", "existing@example.com", "password123")
 

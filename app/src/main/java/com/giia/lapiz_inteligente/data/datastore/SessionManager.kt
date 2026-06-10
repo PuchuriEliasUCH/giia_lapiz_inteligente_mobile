@@ -20,10 +20,25 @@ class SessionManager @Inject constructor(
 ) {
     companion object {
         private val TOKEN_KEY = stringPreferencesKey("jwt_token")
+        private val BACKEND_URL_KEY = stringPreferencesKey("backend_url")
+        private val USER_NAME_KEY = stringPreferencesKey("user_name")
+        private val USER_EMAIL_KEY = stringPreferencesKey("user_email")
     }
 
     val token: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[TOKEN_KEY]
+    }
+
+    val backendUrl: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[BACKEND_URL_KEY]
+    }
+
+    val userName: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[USER_NAME_KEY]
+    }
+
+    val userEmail: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[USER_EMAIL_KEY]
     }
 
     suspend fun saveToken(token: String) {
@@ -32,9 +47,34 @@ class SessionManager @Inject constructor(
         }
     }
 
+    suspend fun saveUserInfo(name: String, email: String) {
+        context.dataStore.edit { preferences ->
+            preferences[USER_NAME_KEY] = name
+            preferences[USER_EMAIL_KEY] = email
+        }
+    }
+
     suspend fun clearToken() {
         context.dataStore.edit { preferences ->
             preferences.remove(TOKEN_KEY)
+        }
+    }
+
+    suspend fun clearAll() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
+
+    suspend fun saveBackendUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            preferences[BACKEND_URL_KEY] = url
+        }
+    }
+
+    suspend fun clearBackendUrl() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(BACKEND_URL_KEY)
         }
     }
 }

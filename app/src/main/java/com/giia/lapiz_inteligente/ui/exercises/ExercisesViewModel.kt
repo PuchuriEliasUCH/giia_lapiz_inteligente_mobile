@@ -109,4 +109,65 @@ class ExercisesViewModel @Inject constructor(
     fun clearDetail() {
         _detailState.value = null
     }
+
+    fun createExercise(
+        name: String,
+        description: String?,
+        strokeTypeId: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val result = exerciseUseCase.createExercise(name, description, strokeTypeId)
+            result.fold(
+                onSuccess = {
+                    loadExercises()
+                    onSuccess()
+                },
+                onFailure = {
+                    onError(it.message ?: "Error al crear ejercicio")
+                }
+            )
+        }
+    }
+
+    fun updateExercise(
+        exerciseId: Int,
+        name: String?,
+        description: String?,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val result = exerciseUseCase.updateExercise(exerciseId, name, description)
+            result.fold(
+                onSuccess = {
+                    loadExercises()
+                    onSuccess()
+                },
+                onFailure = {
+                    onError(it.message ?: "Error al actualizar ejercicio")
+                }
+            )
+        }
+    }
+
+    fun deactivateExercise(
+        exerciseId: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val result = exerciseUseCase.deactivateExercise(exerciseId)
+            result.fold(
+                onSuccess = {
+                    loadExercises()
+                    onSuccess()
+                },
+                onFailure = {
+                    onError(it.message ?: "Error al desactivar ejercicio")
+                }
+            )
+        }
+    }
 }

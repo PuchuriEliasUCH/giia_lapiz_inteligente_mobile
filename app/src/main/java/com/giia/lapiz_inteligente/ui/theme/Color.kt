@@ -10,8 +10,9 @@ val OnSecondary = Color(0xFFFFFFFF)
 
 val Surface = Color(0xFFF8F9FF)
 val OnSurface = Color(0xFF121C2A)
+val OnSurfaceVariant = Color(0xFF434655)
 
-val Background = Color(0xFFFFFFFF)
+val Background = Color(0xFFF8F9FF)
 val OnBackground = Color(0xFF121C2A)
 
 val Error = Color(0xFFBA1A1A)
@@ -25,3 +26,12 @@ val OnWarning = Color(0xFFFFFFFF)
 
 val Info = Color(0xFF60A5FA)
 val OnInfo = Color(0xFFFFFFFF)
+
+val SurfaceContainerLowest = Color(0xFFFFFFFF)
+val SurfaceContainerLow = Color(0xFFEFF4FF)
+val SurfaceContainer = Color(0xFFE6EEFF)
+val SurfaceContainerHigh = Color(0xFFDEE9FC)
+val SurfaceContainerHighest = Color(0xFFD9E3F6)
+
+val Outline = Color(0xFF737686)
+val OutlineVariant = Color(0xFFC3C6D7)

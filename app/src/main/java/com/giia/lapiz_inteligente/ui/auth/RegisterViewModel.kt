@@ -18,10 +18,16 @@ class RegisterViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    fun register(name: String, lastname: String, email: String, password: String) {
+    fun register(
+        name: String,
+        lastname: String,
+        email: String,
+        password: String,
+        phone: String? = null
+    ) {
         _uiState.value = AuthUiState.Loading
         viewModelScope.launch {
-            val result = authRepository.register(name, lastname, email, password)
+            val result = authRepository.register(name, lastname, email, password, phone)
             _uiState.value = result.fold(
                 onSuccess = { AuthUiState.Success("Registro exitoso") },
                 onFailure = { AuthUiState.Error(parseError(it)) }

@@ -4,12 +4,15 @@ import com.giia.lapiz_inteligente.models.auth.LoginRequest
 import com.giia.lapiz_inteligente.models.auth.LoginResponse
 import com.giia.lapiz_inteligente.models.auth.RegisterRequest
 import com.giia.lapiz_inteligente.models.auth.RegisterResponse
+import com.giia.lapiz_inteligente.models.auth.UserProfileResponse
 import com.giia.lapiz_inteligente.models.child.ChildResponse
 import com.giia.lapiz_inteligente.models.child.CreateChildRequest
 import com.giia.lapiz_inteligente.models.child.UpdateChildRequest
+import com.giia.lapiz_inteligente.models.exercise.CreateExerciseRequest
 import com.giia.lapiz_inteligente.models.exercise.ExerciseDetailResponse
 import com.giia.lapiz_inteligente.models.exercise.ExerciseResponse
 import com.giia.lapiz_inteligente.models.exercise.StrokeTypeResponse
+import com.giia.lapiz_inteligente.models.exercise.UpdateExerciseRequest
 import com.giia.lapiz_inteligente.models.session.CreateSessionRequest
 import com.giia.lapiz_inteligente.models.session.EndSessionRequest
 import com.giia.lapiz_inteligente.models.session.SessionResponse
@@ -30,8 +33,20 @@ interface ApiService {
     @POST("auth/register")
     suspend fun register(@Body request: RegisterRequest): RegisterResponse
 
+    @GET("users/me")
+    suspend fun getProfile(@Header("Authorization") token: String): UserProfileResponse
+
     @GET("children/")
-    suspend fun getChildren(@Header("Authorization") token: String): List<ChildResponse>
+    suspend fun getChildren(
+        @Header("Authorization") token: String,
+        @Query("is_active") isActive: Boolean? = null
+    ): List<ChildResponse>
+
+    @GET("children/{child_id}")
+    suspend fun getChild(
+        @Header("Authorization") token: String,
+        @Path("child_id") childId: Int
+    ): ChildResponse
 
     @POST("children/")
     suspend fun createChild(
@@ -69,6 +84,25 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id") exerciseId: Int
     ): ExerciseDetailResponse
+
+    @POST("exercises")
+    suspend fun createExercise(
+        @Header("Authorization") token: String,
+        @Body request: CreateExerciseRequest
+    ): ExerciseResponse
+
+    @PUT("exercises/{id}")
+    suspend fun updateExercise(
+        @Header("Authorization") token: String,
+        @Path("id") exerciseId: Int,
+        @Body request: UpdateExerciseRequest
+    ): ExerciseResponse
+
+    @PATCH("exercises/{id}/deactivate")
+    suspend fun deactivateExercise(
+        @Header("Authorization") token: String,
+        @Path("id") exerciseId: Int
+    ): ExerciseResponse
 
     @POST("sessions")
     suspend fun createSession(
