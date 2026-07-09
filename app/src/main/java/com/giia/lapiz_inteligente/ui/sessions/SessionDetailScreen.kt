@@ -46,6 +46,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import com.giia.lapiz_inteligente.ui.theme.Primary
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +63,14 @@ fun SessionDetailScreen(
 
     LaunchedEffect(sessionId) {
         viewModel.loadActiveSession(sessionId)
+    }
+
+    LaunchedEffect(isRunning) {
+        if (!isRunning) return@LaunchedEffect
+        while (true) {
+            delay(1000L)
+            elapsedSeconds++
+        }
     }
 
     if (showEndDialog) {

@@ -36,8 +36,9 @@ class NetworkScanner @Inject constructor() {
                         try {
                             val url = "http://$ip:$port/$path"
                             val request = Request.Builder().url(url).build()
-                            val response = client.newCall(request).execute()
-                            if (response.isSuccessful) ip else null
+                            client.newCall(request).execute().use { response ->
+                                if (response.isSuccessful) ip else null
+                            }
                         } catch (_: Exception) {
                             null
                         }

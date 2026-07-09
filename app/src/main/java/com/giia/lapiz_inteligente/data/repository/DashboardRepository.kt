@@ -1,27 +1,18 @@
 package com.giia.lapiz_inteligente.data.repository
 
-import com.giia.lapiz_inteligente.data.datastore.SessionManager
 import com.giia.lapiz_inteligente.data.remote.ApiService
 import com.giia.lapiz_inteligente.models.dashboard.DashboardSummary
 import com.giia.lapiz_inteligente.models.session.SessionResponse
 import java.io.IOException
-import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import javax.inject.Inject
 
 class DashboardRepository @Inject constructor(
-    private val apiService: ApiService,
-    private val sessionManager: SessionManager
+    private val apiService: ApiService
 ) {
-    private suspend fun getBearerToken(): String {
-        val token = sessionManager.token.first()
-        return "Bearer $token"
-    }
-
     suspend fun getDashboardSummary(childId: Int, limit: Int = 10): Result<DashboardSummary> {
         return try {
-            val token = getBearerToken()
-            val sessions = apiService.getChildSessions(token, childId, limit = limit)
+            val sessions = apiService.getChildSessions(childId, limit = limit)
             if (sessions.isEmpty()) {
                 return Result.success(DashboardSummary(
                     totalSessions = 0,
@@ -85,8 +76,7 @@ class DashboardRepository @Inject constructor(
 
     suspend fun getRecentSessions(childId: Int, limit: Int = 5): Result<List<SessionResponse>> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.getChildSessions(token, childId, limit = limit))
+            Result.success(apiService.getChildSessions(childId, limit = limit))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {

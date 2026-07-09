@@ -1,28 +1,19 @@
 package com.giia.lapiz_inteligente.data.repository
 
-import com.giia.lapiz_inteligente.data.datastore.SessionManager
 import com.giia.lapiz_inteligente.data.remote.ApiService
 import com.giia.lapiz_inteligente.models.child.ChildResponse
 import com.giia.lapiz_inteligente.models.child.CreateChildRequest
 import com.giia.lapiz_inteligente.models.child.UpdateChildRequest
 import java.io.IOException
-import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import javax.inject.Inject
 
 class ChildRepository @Inject constructor(
-    private val apiService: ApiService,
-    private val sessionManager: SessionManager
+    private val apiService: ApiService
 ) {
-    private suspend fun getBearerToken(): String {
-        val token = sessionManager.token.first()
-        return "Bearer $token"
-    }
-
     suspend fun getChildren(isActive: Boolean? = null): Result<List<ChildResponse>> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.getChildren(token, isActive))
+            Result.success(apiService.getChildren(isActive))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -37,8 +28,7 @@ class ChildRepository @Inject constructor(
 
     suspend fun getChild(childId: Int): Result<ChildResponse> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.getChild(token, childId))
+            Result.success(apiService.getChild(childId))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -60,10 +50,8 @@ class ChildRepository @Inject constructor(
         notes: String? = null
     ): Result<ChildResponse> {
         return try {
-            val token = getBearerToken()
             Result.success(
                 apiService.createChild(
-                    token,
                     CreateChildRequest(
                         name = name,
                         birth_date = birthDate,
@@ -94,10 +82,9 @@ class ChildRepository @Inject constructor(
         notes: String? = null
     ): Result<ChildResponse> {
         return try {
-            val token = getBearerToken()
             Result.success(
                 apiService.updateChild(
-                    token, childId,
+                    childId,
                     UpdateChildRequest(
                         name = name,
                         birth_date = birthDate,
@@ -122,8 +109,7 @@ class ChildRepository @Inject constructor(
 
     suspend fun deactivateChild(childId: Int): Result<ChildResponse> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.deactivateChild(token, childId))
+            Result.success(apiService.deactivateChild(childId))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {

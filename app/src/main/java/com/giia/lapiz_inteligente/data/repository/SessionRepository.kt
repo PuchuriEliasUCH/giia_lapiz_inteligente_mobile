@@ -1,36 +1,55 @@
 package com.giia.lapiz_inteligente.data.repository
 
-import com.giia.lapiz_inteligente.data.datastore.SessionManager
 import com.giia.lapiz_inteligente.data.remote.ApiService
 import com.giia.lapiz_inteligente.models.session.CreateSessionRequest
 import com.giia.lapiz_inteligente.models.session.EndSessionRequest
 import com.giia.lapiz_inteligente.models.session.SessionResponse
 import java.io.IOException
-import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import javax.inject.Inject
 
 class SessionRepository @Inject constructor(
-    private val apiService: ApiService,
-    private val sessionManager: SessionManager
+    private val apiService: ApiService
 ) {
-    private suspend fun getBearerToken(): String {
-        val token = sessionManager.token.first()
-        return "Bearer $token"
-    }
-
-    suspend fun createSession(childId: Int, exerciseId: Int): Result<SessionResponse> {
+    suspend fun createSession(childId: Int, exerciseId: Int, pencilId: Int): Result<SessionResponse> {
         return try {
-            val token = getBearerToken()
             Result.success(
-                apiService.createSession(token, CreateSessionRequest(childId, exerciseId))
+                apiService.createSession(CreateSessionRequest(childId, exerciseId, pencilId))
             )
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
             when (e.code()) {
                 401 -> Result.failure(Exception("Sesión expirada. Inicia sesión nuevamente."))
-                404 -> Result.failure(Exception("Niño o ejercicio no encontrado."))
+                404 -> Result.failure(Exception("Niño, ejercicio o lápiz no encontrado."))
+                409 -> Result.failure(Exception("El lápiz ya está en uso o ya existe una sesión activa."))
+                422 -> Result.failure(Exception("Datos inválidos. Verifica la sesión."))
+                423 -> Result.failure(Exception("El lápiz no está disponible."))
+                else -> Result.failure(Exception("Error del servidor (${e.code()})."))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Error desconocido: ${e.message}"))
+        }
+    }
+
+    suspend fun getActiveSessionByChild(childId: Int): Result<SessionResponse?> {
+        return getActiveSession(childId = childId, pencilId = null)
+    }
+
+    suspend fun getActiveSessionByPencil(pencilId: Int): Result<SessionResponse?> {
+        return getActiveSession(childId = null, pencilId = pencilId)
+    }
+
+    private suspend fun getActiveSession(childId: Int?, pencilId: Int?): Result<SessionResponse?> {
+        return try {
+            Result.success(apiService.getActiveSession(childId = childId, pencilId = pencilId))
+        } catch (e: IOException) {
+            Result.failure(Exception("Error de conexión. Verifica tu internet."))
+        } catch (e: HttpException) {
+            when (e.code()) {
+                400 -> Result.failure(Exception("Debes enviar un niño o un lápiz para consultar sesión activa."))
+                401 -> Result.failure(Exception("Sesión expirada. Inicia sesión nuevamente."))
+                404 -> Result.success(null)
                 else -> Result.failure(Exception("Error del servidor (${e.code()})."))
             }
         } catch (e: Exception) {
@@ -40,8 +59,7 @@ class SessionRepository @Inject constructor(
 
     suspend fun getSession(sessionId: Int): Result<SessionResponse> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.getSession(token, sessionId))
+            Result.success(apiService.getSession(sessionId))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -57,8 +75,7 @@ class SessionRepository @Inject constructor(
 
     suspend fun getChildSessions(childId: Int): Result<List<SessionResponse>> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.getChildSessions(token, childId))
+            Result.success(apiService.getChildSessions(childId))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -74,9 +91,8 @@ class SessionRepository @Inject constructor(
 
     suspend fun endSession(sessionId: Int, closeReason: String = "manual"): Result<SessionResponse> {
         return try {
-            val token = getBearerToken()
             Result.success(
-                apiService.endSession(token, sessionId, EndSessionRequest(closeReason))
+                apiService.endSession(sessionId, EndSessionRequest(closeReason))
             )
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))

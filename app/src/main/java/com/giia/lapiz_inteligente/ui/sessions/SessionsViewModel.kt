@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.giia.lapiz_inteligente.data.repository.ChildRepository
 import com.giia.lapiz_inteligente.data.repository.ExerciseRepository
+import com.giia.lapiz_inteligente.domain.pencil.PencilUseCase
 import com.giia.lapiz_inteligente.domain.session.SessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SessionsViewModel @Inject constructor(
     private val sessionUseCase: SessionUseCase,
+    private val pencilUseCase: PencilUseCase,
     private val childRepository: ChildRepository,
     private val exerciseRepository: ExerciseRepository
 ) : ViewModel() {
@@ -47,15 +49,18 @@ class SessionsViewModel @Inject constructor(
         viewModelScope.launch {
             val childrenResult = childRepository.getChildren()
             val exercisesResult = exerciseRepository.getExercises()
+            val pencilsResult = pencilUseCase.getPencils(status = "available")
 
             val children = childrenResult.getOrNull().orEmpty()
             val exercises = exercisesResult.getOrNull().orEmpty()
+            val pencils = pencilsResult.getOrNull().orEmpty()
 
             _children.value = children.filter { it.is_active }
 
             _createState.value = CreateSessionUiState.Ready(
                 children = children.filter { it.is_active },
-                exercises = exercises
+                exercises = exercises,
+                pencils = pencils.filter { it.status == "available" }
             )
         }
     }
@@ -75,11 +80,12 @@ class SessionsViewModel @Inject constructor(
      *
      * @param childId Identificador del niño.
      * @param exerciseId Identificador del ejercicio.
+     * @param pencilId Identificador del lápiz.
      * @param onSuccess Callback ejecutado al crear la sesión exitosamente.
      */
-    fun createSession(childId: Int, exerciseId: Int, onSuccess: (Int) -> Unit) {
+    fun createSession(childId: Int, exerciseId: Int, pencilId: Int, onSuccess: (Int) -> Unit) {
         viewModelScope.launch {
-            val result = sessionUseCase.createSession(childId, exerciseId)
+            val result = sessionUseCase.createSession(childId, exerciseId, pencilId)
             result.fold(
                 onSuccess = { session ->
                     activeSessionId = session.session_id

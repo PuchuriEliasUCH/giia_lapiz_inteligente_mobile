@@ -23,8 +23,16 @@ class RegisterViewModel @Inject constructor(
         lastname: String,
         email: String,
         password: String,
-        phone: String? = null
+        phone: String? = null,
+        confirmPassword: String = password,
+        termsAccepted: Boolean = true
     ) {
+        val validationError = validateForm(name, lastname, email, password, confirmPassword, termsAccepted)
+        if (validationError != null) {
+            _uiState.value = AuthUiState.Error(validationError)
+            return
+        }
+
         _uiState.value = AuthUiState.Loading
         viewModelScope.launch {
             val result = authRepository.register(name, lastname, email, password, phone)
@@ -41,5 +49,30 @@ class RegisterViewModel @Inject constructor(
 
     private fun parseError(error: Throwable): String {
         return error.message ?: "Error desconocido"
+    }
+
+    private fun validateForm(
+        name: String,
+        lastname: String,
+        email: String,
+        password: String,
+        confirmPassword: String,
+        termsAccepted: Boolean
+    ): String? {
+        return when {
+            name.isBlank() -> "Ingresa tu nombre."
+            lastname.isBlank() -> "Ingresa tu apellido."
+            !isValidEmail(email) -> "Ingresa un correo electrónico válido."
+            password.isBlank() -> "Ingresa una contraseña."
+            password != confirmPassword -> "Las contraseñas no coinciden."
+            !termsAccepted -> "Debes aceptar los términos y la política de privacidad."
+            else -> null
+        }
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        return email.isNotBlank() &&
+            email.contains("@") &&
+            email.substringAfter("@").contains(".")
     }
 }

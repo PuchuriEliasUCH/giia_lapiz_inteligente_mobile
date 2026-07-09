@@ -57,8 +57,10 @@ fun SessionsScreen(
 
     var selectedChildId by remember { mutableStateOf<Int?>(null) }
     var selectedExerciseId by remember { mutableStateOf<Int?>(null) }
+    var selectedPencilId by remember { mutableStateOf<Int?>(null) }
     var childDropdownExpanded by remember { mutableStateOf(false) }
     var exerciseDropdownExpanded by remember { mutableStateOf(false) }
+    var pencilDropdownExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -117,6 +119,9 @@ fun SessionsScreen(
                     ) {
                         val selectedChildName = state.children.find { it.child_id == selectedChildId }?.name ?: ""
                         val selectedExerciseName = state.exercises.find { it.id == selectedExerciseId }?.name ?: ""
+                        val selectedPencilName = state.pencils.find { it.pencil_id == selectedPencilId }?.let { pencil ->
+                            pencil.name ?: pencil.device_uid
+                        } ?: ""
 
                         ExposedDropdownMenuBox(
                             expanded = childDropdownExpanded,
@@ -180,19 +185,59 @@ fun SessionsScreen(
                             }
                         }
 
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        ExposedDropdownMenuBox(
+                            expanded = pencilDropdownExpanded,
+                            onExpandedChange = { pencilDropdownExpanded = it }
+                        ) {
+                            OutlinedTextField(
+                                value = selectedPencilName,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Seleccionar lápiz") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = pencilDropdownExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = pencilDropdownExpanded,
+                                onDismissRequest = { pencilDropdownExpanded = false }
+                            ) {
+                                if (state.pencils.isEmpty()) {
+                                    DropdownMenuItem(
+                                        text = { Text("No hay lápices disponibles") },
+                                        onClick = { pencilDropdownExpanded = false }
+                                    )
+                                } else {
+                                    state.pencils.forEach { pencil ->
+                                        DropdownMenuItem(
+                                            text = { Text(pencil.name ?: pencil.device_uid) },
+                                            onClick = {
+                                                selectedPencilId = pencil.pencil_id
+                                                pencilDropdownExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(32.dp))
 
                         Button(
                             onClick = {
                                 val childId = selectedChildId
                                 val exerciseId = selectedExerciseId
-                                if (childId != null && exerciseId != null) {
-                                    viewModel.createSession(childId, exerciseId) { sessionId ->
+                                val pencilId = selectedPencilId
+                                if (childId != null && exerciseId != null && pencilId != null) {
+                                    viewModel.createSession(childId, exerciseId, pencilId) { sessionId ->
                                         onSessionCreated(sessionId)
                                     }
                                 }
                             },
-                            enabled = selectedChildId != null && selectedExerciseId != null,
+                            enabled = selectedChildId != null && selectedExerciseId != null && selectedPencilId != null,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp)

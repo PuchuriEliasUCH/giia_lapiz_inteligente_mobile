@@ -2,6 +2,7 @@ package com.giia.lapiz_inteligente.ui.sessions
 
 import com.giia.lapiz_inteligente.models.child.ChildResponse
 import com.giia.lapiz_inteligente.models.exercise.ExerciseResponse
+import com.giia.lapiz_inteligente.models.pencil.PencilResponse
 import com.giia.lapiz_inteligente.models.session.SessionResponse
 
 /**
@@ -13,7 +14,8 @@ sealed interface CreateSessionUiState {
     /** Datos cargados listos para crear sesión. */
     data class Ready(
         val children: List<ChildResponse>,
-        val exercises: List<ExerciseResponse>
+        val exercises: List<ExerciseResponse>,
+        val pencils: List<PencilResponse>
     ) : CreateSessionUiState
     /** Ocurrió un error al cargar los datos. */
     data class Error(val message: String) : CreateSessionUiState

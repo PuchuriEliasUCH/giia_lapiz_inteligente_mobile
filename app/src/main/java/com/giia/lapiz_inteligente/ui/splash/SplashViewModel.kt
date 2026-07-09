@@ -53,7 +53,9 @@ class SplashViewModel @Inject constructor(
                         val request = okhttp3.Request.Builder()
                             .url("${cachedUrl.trimEnd('/')}/health")
                             .build()
-                        healthCheckClient.newCall(request).execute().isSuccessful
+                        healthCheckClient.newCall(request).execute().use { response ->
+                            response.isSuccessful
+                        }
                     } catch (_: Exception) {
                         false
                     }
@@ -97,7 +99,9 @@ class SplashViewModel @Inject constructor(
                     val request = okhttp3.Request.Builder()
                         .url("${url.trimEnd('/')}/health")
                         .build()
-                    healthCheckClient.newCall(request).execute().isSuccessful
+                    healthCheckClient.newCall(request).execute().use { response ->
+                        response.isSuccessful
+                    }
                 } catch (_: Exception) {
                     false
                 }

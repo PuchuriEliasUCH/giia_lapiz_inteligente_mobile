@@ -109,8 +109,8 @@ fun NavGraph(
                         navController.popBackStack()
                     },
                     onRegisterSuccess = {
-                        navController.navigate(Routes.DASHBOARD) {
-                            popUpTo(Routes.LOGIN) { inclusive = true }
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(Routes.REGISTER) { inclusive = true }
                             restoreState = false
                         }
                     }

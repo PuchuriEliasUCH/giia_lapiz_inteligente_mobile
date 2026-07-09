@@ -7,6 +7,7 @@ data class SessionResponse(
     val session_id: Int,
     val child_id: Int,
     val exercise_id: Int,
+    val pencil_id: Int? = null,
     val started_at: String,
     val ended_at: String?,
     val close_reason: String? = null,

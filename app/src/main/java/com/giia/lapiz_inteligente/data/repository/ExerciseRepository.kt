@@ -1,6 +1,5 @@
 package com.giia.lapiz_inteligente.data.repository
 
-import com.giia.lapiz_inteligente.data.datastore.SessionManager
 import com.giia.lapiz_inteligente.data.remote.ApiService
 import com.giia.lapiz_inteligente.models.exercise.CreateExerciseRequest
 import com.giia.lapiz_inteligente.models.exercise.ExerciseDetailResponse
@@ -8,23 +7,15 @@ import com.giia.lapiz_inteligente.models.exercise.ExerciseResponse
 import com.giia.lapiz_inteligente.models.exercise.StrokeTypeResponse
 import com.giia.lapiz_inteligente.models.exercise.UpdateExerciseRequest
 import java.io.IOException
-import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import javax.inject.Inject
 
 class ExerciseRepository @Inject constructor(
-    private val apiService: ApiService,
-    private val sessionManager: SessionManager
+    private val apiService: ApiService
 ) {
-    private suspend fun getBearerToken(): String {
-        val token = sessionManager.token.first()
-        return "Bearer $token"
-    }
-
     suspend fun getStrokeTypes(): Result<List<StrokeTypeResponse>> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.getStrokeTypes(token))
+            Result.success(apiService.getStrokeTypes())
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -39,8 +30,7 @@ class ExerciseRepository @Inject constructor(
 
     suspend fun getExercises(): Result<List<ExerciseResponse>> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.getExercises(token))
+            Result.success(apiService.getExercises())
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -55,8 +45,7 @@ class ExerciseRepository @Inject constructor(
 
     suspend fun getExercisesByStrokeType(strokeTypeId: Int): Result<List<ExerciseResponse>> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.getExercisesByStrokeType(token, strokeTypeId))
+            Result.success(apiService.getExercisesByStrokeType(strokeTypeId))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -71,8 +60,7 @@ class ExerciseRepository @Inject constructor(
 
     suspend fun getExerciseDetail(exerciseId: Int): Result<ExerciseDetailResponse> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.getExerciseDetail(token, exerciseId))
+            Result.success(apiService.getExerciseDetail(exerciseId))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -88,8 +76,7 @@ class ExerciseRepository @Inject constructor(
 
     suspend fun createExercise(request: CreateExerciseRequest): Result<ExerciseResponse> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.createExercise(token, request))
+            Result.success(apiService.createExercise(request))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -105,8 +92,7 @@ class ExerciseRepository @Inject constructor(
 
     suspend fun updateExercise(exerciseId: Int, request: UpdateExerciseRequest): Result<ExerciseResponse> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.updateExercise(token, exerciseId, request))
+            Result.success(apiService.updateExercise(exerciseId, request))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {
@@ -123,8 +109,7 @@ class ExerciseRepository @Inject constructor(
 
     suspend fun deactivateExercise(exerciseId: Int): Result<ExerciseResponse> {
         return try {
-            val token = getBearerToken()
-            Result.success(apiService.deactivateExercise(token, exerciseId))
+            Result.success(apiService.deactivateExercise(exerciseId))
         } catch (e: IOException) {
             Result.failure(Exception("Error de conexión. Verifica tu internet."))
         } catch (e: HttpException) {

@@ -15,8 +15,16 @@ class SessionUseCase @Inject constructor(
     private val sessionRepository: SessionRepository
 ) {
 
-    suspend fun createSession(childId: Int, exerciseId: Int): Result<SessionResponse> {
-        return sessionRepository.createSession(childId, exerciseId)
+    suspend fun createSession(childId: Int, exerciseId: Int, pencilId: Int): Result<SessionResponse> {
+        return sessionRepository.createSession(childId, exerciseId, pencilId)
+    }
+
+    suspend fun getActiveSessionByChild(childId: Int): Result<SessionResponse?> {
+        return sessionRepository.getActiveSessionByChild(childId)
+    }
+
+    suspend fun getActiveSessionByPencil(pencilId: Int): Result<SessionResponse?> {
+        return sessionRepository.getActiveSessionByPencil(pencilId)
     }
 
     suspend fun getSession(sessionId: Int): Result<SessionResponse> {

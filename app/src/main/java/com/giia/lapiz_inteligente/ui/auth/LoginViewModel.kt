@@ -19,6 +19,12 @@ class LoginViewModel @Inject constructor(
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun login(email: String, password: String) {
+        val validationError = validateForm(email, password)
+        if (validationError != null) {
+            _uiState.value = AuthUiState.Error(validationError)
+            return
+        }
+
         _uiState.value = AuthUiState.Loading
         viewModelScope.launch {
             val result = authRepository.login(email, password)
@@ -35,5 +41,19 @@ class LoginViewModel @Inject constructor(
 
     private fun parseError(error: Throwable): String {
         return error.message ?: "Error desconocido"
+    }
+
+    private fun validateForm(email: String, password: String): String? {
+        return when {
+            !isValidEmail(email) -> "Ingresa un correo electrónico válido."
+            password.isBlank() -> "Ingresa tu contraseña."
+            else -> null
+        }
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        return email.isNotBlank() &&
+            email.contains("@") &&
+            email.substringAfter("@").contains(".")
     }
 }

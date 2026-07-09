@@ -93,7 +93,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Nombre Completo",
+            text = "Nombre",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth()
@@ -102,6 +102,28 @@ fun RegisterScreen(
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Apellido",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedTextField(
+            value = lastname,
+            onValueChange = { lastname = it },
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -210,7 +232,14 @@ fun RegisterScreen(
         } else {
             Button(
                 onClick = {
-                    viewModel.register(name.trim(), lastname.trim(), email.trim(), password)
+                    viewModel.register(
+                        name = name.trim(),
+                        lastname = lastname.trim(),
+                        email = email.trim(),
+                        password = password,
+                        confirmPassword = confirmPassword,
+                        termsAccepted = termsAccepted
+                    )
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondary,

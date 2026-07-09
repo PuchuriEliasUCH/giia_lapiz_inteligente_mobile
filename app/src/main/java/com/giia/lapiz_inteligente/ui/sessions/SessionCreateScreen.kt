@@ -14,8 +14,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -24,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -32,6 +38,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,6 +108,9 @@ fun SessionCreateScreen(
                 is CreateSessionUiState.Ready -> {
                     val child = state.children.find { it.child_id == childId }
                     val exercise = state.exercises.find { it.id == exerciseId }
+                    var selectedPencilId by remember { mutableStateOf<Int?>(null) }
+                    var pencilDropdownExpanded by remember { mutableStateOf(false) }
+                    val selectedPencil = state.pencils.find { it.pencil_id == selectedPencilId }
 
                     Column(
                         modifier = Modifier
@@ -159,14 +170,57 @@ fun SessionCreateScreen(
                             }
                         }
 
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        ExposedDropdownMenuBox(
+                            expanded = pencilDropdownExpanded,
+                            onExpandedChange = { pencilDropdownExpanded = it }
+                        ) {
+                            OutlinedTextField(
+                                value = selectedPencil?.let { it.name ?: it.device_uid } ?: "",
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Lápiz") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = pencilDropdownExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = pencilDropdownExpanded,
+                                onDismissRequest = { pencilDropdownExpanded = false }
+                            ) {
+                                if (state.pencils.isEmpty()) {
+                                    DropdownMenuItem(
+                                        text = { Text("No hay lápices disponibles") },
+                                        onClick = { pencilDropdownExpanded = false }
+                                    )
+                                } else {
+                                    state.pencils.forEach { pencil ->
+                                        DropdownMenuItem(
+                                            text = { Text(pencil.name ?: pencil.device_uid) },
+                                            onClick = {
+                                                selectedPencilId = pencil.pencil_id
+                                                pencilDropdownExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(32.dp))
 
                         Button(
                             onClick = {
-                                viewModel.createSession(childId, exerciseId) { sessionId ->
-                                    onSessionStarted(sessionId)
+                                val pencilId = selectedPencilId
+                                if (pencilId != null) {
+                                    viewModel.createSession(childId, exerciseId, pencilId) { sessionId ->
+                                        onSessionStarted(sessionId)
+                                    }
                                 }
                             },
+                            enabled = selectedPencilId != null,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp)
